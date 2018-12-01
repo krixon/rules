@@ -1,0 +1,25 @@
+{
+    "name": "krixon/rules",
+    "description": "Converts textual rules into specification objects",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Karl Rixon",
+            "email": "karlrixon@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Krixon\\Rules\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Krixon\\Rules\\Tests\\": "tests"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.4"
+    }
+}
