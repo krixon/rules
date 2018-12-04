@@ -118,5 +118,5 @@ abstract class Compiler implements Ast\Visitor
     }
 
 
-    abstract protected function literal(Ast\IdentifierNode $identifier, Ast\LiteralNode $node);
+    abstract protected function literal(Ast\IdentifierNode $identifier, Ast\LiteralNode $node) : Spec\Specification;
 }
