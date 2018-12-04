@@ -20,17 +20,31 @@ class SyntaxErrorTest extends TestCase
     {
         return [
             [
-                new SyntaxError('Something bad happened.', 'foo = bar', 1, 4),
-                "[line 1, column 4]: Something bad happened.\n\n" .
+                new SyntaxError('Something bad happened.', 'foo = bar', 4),
+                "[line 1, column 5]: Something bad happened.\n\n" .
                 "\t1 | foo = bar\n" .
                 "\t        ^-- here"
             ],
             [
-                new SyntaxError('Something bad happened.', 'foo = bar', 23, 4),
-                "[line 23, column 4]: Something bad happened.\n\n" .
-                "\t23 | foo = bar\n" .
-                "\t         ^-- here"
+                new SyntaxError('Something bad happened.', "foo = 42\nor\nfoo = 43", 16),
+                "[line 3, column 5]: Something bad happened.\n\n" .
+                "\t3 | foo = 43\n" .
+                "\t        ^-- here"
+            ],
+            [
+                new SyntaxError('Something bad happened.', "a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk", 20),
+                "[line 11, column 1]: Something bad happened.\n\n" .
+                "\t11 | k\n" .
+                "\t     ^-- here"
             ]
         ];
+    }
+
+
+    public function testExposesContext()
+    {
+        $e = new SyntaxError('message', 'context', 1);
+
+        static::assertSame('context', $e->context());
     }
 }

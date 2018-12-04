@@ -57,7 +57,7 @@ class LexerTest extends TestCase
                     new Token(Token::IDENTIFIER, 'foo', 0),
                     new Token(Token::EQUAL, 'is', 4),
                     new Token(Token::NUMBER, 1, 7),
-                    new Token(Token::OR, 'or', 9),
+                    new Token(Token:: OR, 'or', 9),
                     new Token(Token::IDENTIFIER, 'foo', 12),
                     new Token(Token::EQUAL, 'is', 16),
                     new Token(Token::NUMBER, 2, 19),
@@ -70,12 +70,12 @@ class LexerTest extends TestCase
                     new Token(Token::IDENTIFIER, 'foo', 0),
                     new Token(Token::EQUAL, 'is', 4),
                     new Token(Token::NUMBER, 1, 7),
-                    new Token(Token::AND, 'and', 9),
+                    new Token(Token:: AND, 'and', 9),
                     new Token(Token::LEFT_PAREN, '(', 13),
                     new Token(Token::IDENTIFIER, 'bar', 14),
                     new Token(Token::GREATER, '>', 18),
                     new Token(Token::NUMBER, 100, 20),
-                    new Token(Token::OR, 'or', 24),
+                    new Token(Token:: OR, 'or', 24),
                     new Token(Token::IDENTIFIER, 'bar', 27),
                     new Token(Token::IN, 'in', 31),
                     new Token(Token::LEFT_BRACKET, '[', 34),
@@ -135,11 +135,23 @@ class LexerTest extends TestCase
     public function reportsErrorsProvider() : array
     {
         return [
+//            [
+//                'foo ! bar',
+//                "Expected '=', got ' '",
+//                1,
+//                5,
+//            ],
+//            [
+//                'foo = bar',
+//                "Expected '=', got ' '",
+//                1,
+//                5,
+//            ],
             [
-                'foo ! bar',
-                "Invalid token. Expected '=' after '!'.",
+                'foo is "bar',
+                "Unterminated string",
                 1,
-                4,
+                12,
             ],
         ];
     }

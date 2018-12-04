@@ -12,17 +12,31 @@ class SyntaxError extends \Exception
     private $expressionColumn;
 
 
-    public function __construct(string $message, string $context, int $line, int $column)
+    public function __construct(string $message, string $expression, int $position)
     {
+        $preceding = mb_substr($expression, 0, $position);
+
+        $start = mb_strrpos($preceding, "\n");
+        if ($start !== false) {
+            $start++;
+        } else {
+            $start = 0;
+        }
+
+        $end     = mb_strpos($expression, "\n", $position) ?: null;
+        $line    = substr_count($preceding, "\n") + 1;
+        $column  = ($position - $start) + 1;
+        $context = mb_substr($expression, $start, $end);
+
         $this->errorMessage     = $message;
-        $this->context          = $context;
+        $this->context          = $expression;
         $this->expressionLine   = $line;
         $this->expressionColumn = $column;
 
         $message = "[line $line, column $column]: $message";
 
         if ($context !== '') {
-            $message .= "\n\n\t$line | $context\n\t" . str_repeat(' ', $column + strlen($line) + 3) . '^-- here';
+            $message .= "\n\n\t$line | $context\n\t" . str_repeat(' ', $column + strlen($line) + 2) . '^-- here';
         }
 
         parent::__construct($message);
@@ -31,12 +45,17 @@ class SyntaxError extends \Exception
 
     public static function unexpectedToken(string $context, string $expected, Token $actual) : self
     {
-        return new static(
-            sprintf("Expected '%s', got '%s'.", $expected, $actual->type()),
-            $context,
-            $actual->line(),
-            $actual->column()
-        );
+        return self::unexpectedCharacter($context, $expected, $actual->type(), $actual->position());
+    }
+
+
+    public static function unexpectedCharacter(
+        string $context,
+        string $expected,
+        string $actual,
+        int $position
+    ) : self {
+        return new static(sprintf("Expected '%s', got '%s'.", $expected, $actual), $context, $position);
     }
 
 

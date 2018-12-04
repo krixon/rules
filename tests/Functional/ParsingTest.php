@@ -55,6 +55,13 @@ class ParsingTest extends TestCase
                     )
                 )
             ],
+            [
+                'foo.bar is "baz"',
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo', new Ast\IdentifierNode('bar')),
+                    new Ast\StringNode('baz')
+                )
+            ],
         ];
     }
 
@@ -66,6 +73,8 @@ class ParsingTest extends TestCase
      * @param string $message
      * @param int    $line
      * @param int    $column
+     *
+     * @throws SyntaxError
      */
     public function testReportsErrors(string $expression, string $message, int $line, int $column)
     {
@@ -92,7 +101,7 @@ class ParsingTest extends TestCase
                 'foo is (bar is "baz")',
                 "Expected 'LITERAL', got 'LEFT_PAREN'.",
                 1,
-                7,
+                8,
             ],
         ];
     }

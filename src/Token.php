@@ -28,17 +28,13 @@ class Token
     private $value;
     private $type;
     private $position;
-    private $line;
-    private $column;
 
 
-    public function __construct(string $type, $value, int $position, int $line = 1, int $column = null)
+    public function __construct(string $type, $value, int $position)
     {
         $this->value    = $value;
         $this->type     = $type;
         $this->position = $position;
-        $this->line     = $line;
-        $this->column   = null === $column ? $position : $column;
     }
 
 
@@ -95,17 +91,5 @@ class Token
     public function position() : int
     {
         return $this->position;
-    }
-
-
-    public function line() : int
-    {
-        return $this->line;
-    }
-
-
-    public function column() : int
-    {
-        return $this->column;
     }
 }

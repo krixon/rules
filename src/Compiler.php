@@ -2,6 +2,7 @@
 
 namespace Krixon\Rules;
 
+use Krixon\Rules\Ast;
 use Krixon\Rules\Exception\CompilerError;
 use Krixon\Rules\Specification as Spec;
 

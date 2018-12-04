@@ -28,7 +28,7 @@ class ExpressionParser implements Parser
         $this->tokens     = $this->lexer->tokenize($this->expression);
 
         if (empty($this->tokens)) {
-            throw new SyntaxError('Empty expression.', '', 0, 0);
+            throw new SyntaxError('Empty expression.', '', 1, 1);
         }
 
         $node = $this->parseExpression();
@@ -39,6 +39,9 @@ class ExpressionParser implements Parser
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function parseExpression($precedence = 0) : Ast\Node
     {
         $left = $this->parsePrimaryNode();
@@ -56,6 +59,9 @@ class ExpressionParser implements Parser
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function parsePrimaryNode() : Ast\Node
     {
         if ($this->token()->is(Token::LEFT_PAREN)) {
@@ -68,6 +74,9 @@ class ExpressionParser implements Parser
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function parseLogicalExpression(Ast\Node $left) : Ast\Node
     {
         $this->matchLogicalOperator();
@@ -84,6 +93,9 @@ class ExpressionParser implements Parser
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function parseComparisonExpression() : Ast\Node
     {
         $left = $this->parseIdentifier();
@@ -106,6 +118,9 @@ class ExpressionParser implements Parser
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function parseIdentifier() : Ast\IdentifierNode
     {
         $this->match(Token::IDENTIFIER);
@@ -124,6 +139,9 @@ class ExpressionParser implements Parser
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function parseLiteral() : Ast\Node
     {
         $this->matchLiteral();
@@ -140,6 +158,9 @@ class ExpressionParser implements Parser
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function parseLiteralList() : Ast\NodeList
     {
         $this->match(Token::LEFT_BRACKET);
@@ -169,6 +190,9 @@ class ExpressionParser implements Parser
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function parseSubExpression() : Ast\Node
     {
         $this->match(Token::LEFT_PAREN);
@@ -197,51 +221,46 @@ class ExpressionParser implements Parser
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function match(string $tokenType) : void
     {
         if (!$this->token()->is($tokenType)) {
-            throw SyntaxError::unexpectedToken($this->context(), $tokenType, $this->token());
+            throw SyntaxError::unexpectedToken($this->expression, $tokenType, $this->token());
         }
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function matchComparisonOperator() : void
     {
         if (!$this->token()->isComparisonOperator()) {
-            throw SyntaxError::unexpectedToken($this->context(), 'COMPARISON_OPERATOR', $this->token());
+            throw SyntaxError::unexpectedToken($this->expression, 'COMPARISON_OPERATOR', $this->token());
         }
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function matchLogicalOperator() : void
     {
         if (!$this->token()->isLogicalOperator()) {
-            throw SyntaxError::unexpectedToken($this->context(), 'LOGICAL_OPERATOR', $this->token());
+            throw SyntaxError::unexpectedToken($this->expression, 'LOGICAL_OPERATOR', $this->token());
         }
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     private function matchLiteral() : void
     {
         if (!$this->token()->isLiteral()) {
-            throw SyntaxError::unexpectedToken($this->context(), 'LITERAL', $this->token());
+            throw SyntaxError::unexpectedToken($this->expression, 'LITERAL', $this->token());
         }
-    }
-
-
-    private function context() : string
-    {
-        // Work out the contents of the line containing the token.
-
-        $token = $this->tokens[$this->pointer];
-        $eof   = mb_strlen($this->expression);
-
-        for ($end = $token->position(); $end < $eof; $end++) {
-            if (mb_substr($this->expression, $end, 1) === "\n") {
-                break;
-            }
-        }
-
-        return mb_substr($this->expression, $token->position() - $token->column(), $end - $token->position());
     }
 }

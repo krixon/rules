@@ -15,23 +15,28 @@ class Lexer
     ];
 
     private $expression;
-    private $tokens  = [];
-    private $line    = 1;  // The current line number.
-    private $start   = 0;  // The position of the start of the current token.
-    private $current = 0;  // The current cursor position.
-    private $end     = 0;  // The position of the end of the expression.
+    private $tokens        = [];
+    private $lineNumber    = 1;  // The current line number. 1-based.
+    private $lineOffset    = 0;  // The offset into $expression of the start of the current line.
+    private $tokenStart    = 0;  // The position of the start of the current token.
+    private $current       = 0;  // The current cursor position (the offset into $expression).
+    private $expressionEnd = 0;  // The position of the end of the expression.
 
 
+    /**
+     * @return Token[]
+     * @throws SyntaxError
+     */
     public function tokenize(string $expression) : array
     {
         $this->reset($expression);
 
         while (!$this->eof()) {
-            $this->start = $this->current;
+            $this->tokenStart = $this->current;
             $this->next();
         }
 
-        $this->start = $this->current;
+        $this->tokenStart = $this->current;
 
         $this->push(Token::EOF);
 
@@ -39,6 +44,9 @@ class Lexer
     }
 
 
+    /**
+     * @throws SyntaxError
+     */
     public function next() : void
     {
         $char = $this->advance();
@@ -49,7 +57,8 @@ class Lexer
             case "\t":
                 break;
             case "\n":
-                $this->line++;
+                $this->lineNumber++;
+                $this->lineOffset = $this->current;
                 break;
 
             case '(': $this->push(Token::LEFT_PAREN);    break;
@@ -72,18 +81,29 @@ class Lexer
                 } elseif (\IntlChar::isalpha($char)) {
                     $this->identifier();
                 } else {
-                    $this->error('Invalid token.');
+                    throw new SyntaxError('Invalid token.', $this->expression, $this->current - 1);
                 }
         }
     }
 
 
     /**
-     * Returns the current character and then advances the cursor to the next.
+     * Returns the current character and advances the cursor to the next.
      */
     private function advance() : string
     {
-        return mb_substr($this->expression, $this->current++, 1);
+        $this->consume();
+
+        return mb_substr($this->expression, $this->current - 1, 1);
+    }
+
+
+    /**
+     * Consumes the current character and advances the cursor to the next.
+     */
+    private function consume() : void
+    {
+        $this->current++;
     }
 
 
@@ -98,7 +118,7 @@ class Lexer
     {
         $position = $this->current + $offset;
 
-        if ($position >= $this->end || $position < 0) {
+        if ($position >= $this->expressionEnd || $position < 0) {
             return null;
         }
 
@@ -120,7 +140,7 @@ class Lexer
             return false;
         }
 
-        $this->current++;
+        $this->consume();
 
         return true;
     }
@@ -128,11 +148,13 @@ class Lexer
 
     /**
      * Handles a possible "equals" token.
+     *
+     * @throws SyntaxError
      */
     private function eq()
     {
         if (!$this->match('=')) {
-            $this->error("Invalid token. Expected '=' after '='.");
+            $this->unexpectedCharacter('=');
             return;
         }
 
@@ -142,11 +164,13 @@ class Lexer
 
     /**
      * Handles a possible "not equals" token.
+     *
+     * @throws SyntaxError
      */
     private function neq()
     {
         if (!$this->match('=')) {
-            $this->error("Invalid token. Expected '=' after '!'.");
+            $this->unexpectedCharacter('=');
             return;
         }
 
@@ -156,23 +180,24 @@ class Lexer
 
     /**
      * Handles a string token.
+     *
+     * @throws SyntaxError
      */
     private function string()
     {
         // TODO: Escape sequences?
 
         while ($this->peek() !== '"' && !$this->eof()) {
-            $this->advance();
+            $this->consume();
         }
 
         if ($this->eof()) {
-            $this->error('Unterminated string.');
-            return;
+            throw new SyntaxError('Unterminated string.', $this->expression, $this->current);
         }
 
-        $value = mb_substr($this->expression, $this->start + 1, $this->current - $this->start - 1);
+        $value = mb_substr($this->expression, $this->tokenStart + 1, $this->current - $this->tokenStart - 1);
 
-        $this->advance();
+        $this->consume();
 
         $this->push(Token::STRING, $value);
     }
@@ -228,7 +253,7 @@ class Lexer
      */
     private function lexeme() : string
     {
-        return mb_substr($this->expression, $this->start, $this->current - $this->start);
+        return mb_substr($this->expression, $this->tokenStart, $this->current - $this->tokenStart);
     }
 
 
@@ -237,7 +262,26 @@ class Lexer
      */
     private function eof() : bool
     {
-        return $this->current >= $this->end;
+        return $this->current >= $this->expressionEnd;
+    }
+
+
+    /**
+     * Creates a new token.
+     *
+     * If no $value is provided, the current lexeme will be used, unless there is no current lexeme, in which case
+     * null will be used.
+     */
+    private function token(string $token, $value = null) : Token
+    {
+        if (null === $value) {
+            $value = $this->lexeme();
+            if ('' === $value) {
+                $value = null;
+            }
+        }
+
+        return new Token($token, $value, $this->tokenStart);
     }
 
 
@@ -247,49 +291,38 @@ class Lexer
      * If no $value is provided, the current lexeme will be used, unless there is no current lexeme, in which case
      * null will be used.
      */
-    private function push(string $token, $value = null)
+    private function push(string $token, $value = null) : void
     {
-        if (null === $value) {
-            $value = $this->lexeme();
-            if ('' === $value) {
-                $value = null;
-            }
-        }
-
-        $this->tokens[] = new Token($token, $value, $this->start);
+        $this->tokens[] = $this->token($token, $value);
     }
 
 
-    private function error(string $message) : void
+    /**
+     * @throws SyntaxError
+     */
+    private function unexpectedCharacter(string $expected, string $actual = null)
     {
-        // Work out the position and contents of the current line.
-
-        for ($start = $this->start; $start > 0; $start--) {
-            if (mb_substr($this->expression, $start, 1) === "\n") {
-                break;
-            }
+        if (null === $actual) {
+            $actual = $this->peek() ?? Token::EOF;
         }
 
-        for ($end = $this->start; $end < $this->end; $end++) {
-            if (mb_substr($this->expression, $end, 1) === "\n") {
-                break;
-            }
-        }
-
-        $column  = $this->start - $start;
-        $context = mb_substr($this->expression, $start, $end - $start);
-
-        throw new SyntaxError($message, $context, $this->line, $column);
+        throw SyntaxError::unexpectedCharacter(
+            $this->expression,
+            $expected,
+            $actual,
+            $this->current - 1
+        );
     }
 
 
     private function reset(string $expression)
     {
-        $this->expression = $expression;
-        $this->tokens     = [];
-        $this->line       = 1;
-        $this->start      = 0;
-        $this->current    = 0;
-        $this->end        = mb_strlen($expression);
+        $this->expression    = $expression;
+        $this->tokens        = [];
+        $this->lineNumber    = 1;
+        $this->lineOffset    = 0;
+        $this->tokenStart    = 0;
+        $this->current       = 0;
+        $this->expressionEnd = mb_strlen($expression);
     }
 }
