@@ -28,7 +28,7 @@ class ExpressionParser implements Parser
         $this->tokens     = $this->lexer->tokenize($this->expression);
 
         if (empty($this->tokens)) {
-            throw new SyntaxError('Empty expression.', '', 1, 1);
+            throw new SyntaxError('Empty expression.', '', 0);
         }
 
         $node = $this->parseExpression();
