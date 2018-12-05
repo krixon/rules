@@ -54,4 +54,25 @@ class Composite implements Specification
         // If we are AND joined, there have been only matching children seen so return true.
         return $this->type === static::AND;
     }
+
+
+    public function isAnd() : bool
+    {
+        return $this->type === self::AND;
+    }
+
+
+    public function isOr() : bool
+    {
+        return $this->type === self::OR;
+    }
+
+
+    /**
+     * @return Specification[]
+     */
+    public function children() : array
+    {
+        return $this->children;
+    }
 }

@@ -135,18 +135,18 @@ class LexerTest extends TestCase
     public function reportsErrorsProvider() : array
     {
         return [
-//            [
-//                'foo ! bar',
-//                "Expected '=', got ' '",
-//                1,
-//                5,
-//            ],
-//            [
-//                'foo = bar',
-//                "Expected '=', got ' '",
-//                1,
-//                5,
-//            ],
+            [
+                'foo ! bar',
+                "Expected '=', got ' '",
+                1,
+                5,
+            ],
+            [
+                'foo = bar',
+                "Expected '=', got ' '",
+                1,
+                5,
+            ],
             [
                 'foo is "bar',
                 "Unterminated string",

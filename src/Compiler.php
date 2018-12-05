@@ -75,10 +75,18 @@ abstract class Compiler implements Ast\Visitor
         $node->right()->accept($this);
         $node->left()->accept($this);
 
-        // TODO: If the child of a logical group is a logical group of the same type, flatten it.
-        // For example, given ((a or b) or c), convert to (a or b or c).
-
         $args = [$this->specifications->pop(), $this->specifications->pop()];
+
+        // Are any of these args a LogicalNode of the same type? If so we can flatten the specification.
+        // For example, given ((a or b) or c), convert to (a or b or c).
+        foreach ($args as $key => $arg) {
+            if ($arg instanceof Spec\Composite && $node->isAnd() === $arg->isAnd()) {
+                unset($args[$key]);
+                array_unshift($args, ...$arg->children());
+            }
+        }
+
+        $args = array_values($args);
 
         if ($node->isAnd()) {
             $this->specifications->push(Spec\Composite::and(...$args));

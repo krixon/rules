@@ -58,16 +58,53 @@ class CompilingTest extends TestCase
             [
                 '(foo is "bar") and (a is 1 or b is 2) and (c is "red" or d is "blue")',
                 Composite::and(
-                    Composite::and(
-                        $this->identifierMatches('foo', 'bar'),
-                        Composite::or(
-                            $this->identifierMatches('a', 1),
-                            $this->identifierMatches('b', 2)
-                        )
+                    $this->identifierMatches('foo', 'bar'),
+                    Composite::or(
+                        $this->identifierMatches('a', 1),
+                        $this->identifierMatches('b', 2)
                     ),
                     Composite::or(
                         $this->identifierMatches('c', 'red'),
                         $this->identifierMatches('d', 'blue')
+                    )
+                )
+            ],
+            [
+                'foo is 1 or foo is 2 or foo is 3 or foo is 4',
+                Composite::or(
+                    $this->identifierMatches('foo', 1),
+                    $this->identifierMatches('foo', 2),
+                    $this->identifierMatches('foo', 3),
+                    $this->identifierMatches('foo', 4)
+                )
+            ],
+            [
+                'foo is 1 or foo is 2 and foo is 3',
+                Composite::and(
+                    Composite::or(
+                        $this->identifierMatches('foo', 1),
+                        $this->identifierMatches('foo', 2)
+                    ),
+                    $this->identifierMatches('foo', 3)
+                )
+            ],
+            [
+                '(foo is 1 or foo is 2) and foo is 3',
+                Composite::and(
+                    Composite::or(
+                        $this->identifierMatches('foo', 1),
+                        $this->identifierMatches('foo', 2)
+                    ),
+                    $this->identifierMatches('foo', 3)
+                )
+            ],
+            [
+                'foo is 1 or (foo is 2 and foo is 3)',
+                Composite::or(
+                    $this->identifierMatches('foo', 1),
+                    Composite::and(
+                        $this->identifierMatches('foo', 2),
+                        $this->identifierMatches('foo', 3)
                     )
                 )
             ],
