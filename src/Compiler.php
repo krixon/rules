@@ -19,6 +19,11 @@ abstract class Compiler implements Ast\Visitor
     private $identifiers;
 
 
+    /**
+     * Compiles an AST into a Specification.
+     *
+     * @throws CompilerError
+     */
     public function compile(Ast\Node $node) : Spec\Specification
     {
         $this->specifications = new \SplStack();

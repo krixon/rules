@@ -92,7 +92,7 @@ class CompilingTest extends TestCase
             }
 
 
-            protected function literal(IdentifierNode $identifier, LiteralNode $node)
+            protected function literal(IdentifierNode $identifier, LiteralNode $node) : Specification
             {
                 $fn = $this->fn;
 
