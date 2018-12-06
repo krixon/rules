@@ -75,18 +75,17 @@ abstract class Compiler implements Ast\Visitor
         $node->right()->accept($this);
         $node->left()->accept($this);
 
-        $args = [$this->specifications->pop(), $this->specifications->pop()];
+        $args = [];
 
         // Are any of these args a LogicalNode of the same type? If so we can flatten the specification.
         // For example, given ((a or b) or c), convert to (a or b or c).
-        foreach ($args as $key => $arg) {
+        foreach ([$this->specifications->pop(), $this->specifications->pop()] as $arg) {
             if ($arg instanceof Spec\Composite && $node->isAnd() === $arg->isAnd()) {
-                unset($args[$key]);
-                array_unshift($args, ...$arg->children());
+                $args = array_merge($args, $arg->children());
+            } else {
+                $args[] = $arg;
             }
         }
-
-        $args = array_values($args);
 
         if ($node->isAnd()) {
             $this->specifications->push(Spec\Composite::and(...$args));
@@ -121,7 +120,10 @@ abstract class Compiler implements Ast\Visitor
     }
 
 
-    public function visitLiteral(Ast\LiteralNode $node) : void
+    abstract protected function literal(Ast\IdentifierNode $identifier, Ast\LiteralNode $node) : Spec\Specification;
+
+
+    private function visitLiteral(Ast\LiteralNode $node) : void
     {
         /** @var Ast\IdentifierNode $identifier */
         $identifier    = $this->identifiers->top();
@@ -129,7 +131,4 @@ abstract class Compiler implements Ast\Visitor
 
         $this->specifications->push($specification);
     }
-
-
-    abstract protected function literal(Ast\IdentifierNode $identifier, Ast\LiteralNode $node) : Spec\Specification;
 }
