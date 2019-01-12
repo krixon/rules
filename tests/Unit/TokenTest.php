@@ -2,7 +2,7 @@
 
 namespace Krixon\Rules\Tests\Unit;
 
-use Krixon\Rules\Token;
+use Krixon\Rules\Lexer\Token;
 use PHPUnit\Framework\TestCase;
 
 class TokenTest extends TestCase

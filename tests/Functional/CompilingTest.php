@@ -34,6 +34,14 @@ class CompilingTest extends TestCase
                 $this->identifierMatches('foo', 'bar')
             ],
             [
+                'foo is true',
+                $this->identifierMatches('foo', true)
+            ],
+            [
+                'foo is false',
+                $this->identifierMatches('foo', false)
+            ],
+            [
                 'foo not "bar"',
                 new Not($this->identifierMatches('foo', 'bar'))
             ],

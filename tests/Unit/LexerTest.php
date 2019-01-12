@@ -3,8 +3,8 @@
 namespace Krixon\Rules\Tests\Unit;
 
 use Krixon\Rules\Exception\SyntaxError;
-use Krixon\Rules\Lexer;
-use Krixon\Rules\Token;
+use Krixon\Rules\Lexer\Lexer;
+use Krixon\Rules\Lexer\Token;
 use PHPUnit\Framework\TestCase;
 
 class LexerTest extends TestCase

@@ -62,6 +62,13 @@ class ParsingTest extends TestCase
                     new Ast\StringNode('baz')
                 )
             ],
+            [
+                'foo is true',
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    Ast\BooleanNode::true()
+                )
+            ],
         ];
     }
 
@@ -103,12 +110,12 @@ class ParsingTest extends TestCase
                 1,
                 1,
             ],
-//            [
-//                'foo is (bar is "baz")',
-//                "Expected 'LITERAL', got 'LEFT_PAREN'.",
-//                1,
-//                8,
-//            ],
+            [
+                'foo is (bar is "baz")',
+                "Expected 'LITERAL', got 'LEFT_PAREN'.",
+                1,
+                8,
+            ],
         ];
     }
 }

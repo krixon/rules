@@ -1,6 +1,6 @@
 <?php
 
-namespace Krixon\Rules;
+namespace Krixon\Rules\Lexer;
 
 class Token
 {
@@ -12,6 +12,7 @@ class Token
     public const DOT           = 'DOT';
     public const STRING        = 'STRING';
     public const NUMBER        = 'NUMBER';
+    public const BOOLEAN       = 'BOOLEAN';
     public const IDENTIFIER    = 'IDENTIFIER';
     public const NOT           = 'NOT';
     public const EQUAL         = 'EQUAL';
@@ -72,7 +73,11 @@ class Token
 
     public function isLiteral() : bool
     {
-        return $this->is(self::STRING, self::NUMBER);
+        return $this->is(
+            self::STRING,
+            self::NUMBER,
+            self::BOOLEAN
+        );
     }
 
 

@@ -2,7 +2,7 @@
 
 namespace Krixon\Rules\Exception;
 
-use Krixon\Rules\Token;
+use Krixon\Rules\Lexer\Token;
 
 class SyntaxError extends \Exception
 {

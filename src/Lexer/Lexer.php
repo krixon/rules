@@ -1,17 +1,19 @@
 <?php
 
-namespace Krixon\Rules;
+namespace Krixon\Rules\Lexer;
 
 use Krixon\Rules\Exception\SyntaxError;
 
 class Lexer
 {
     private const KEYWORDS = [
-        'is'  => Token::EQUAL,
-        'not' => Token::NOT_EQUAL,
-        'and' => Token::AND,
-        'or'  => Token::OR,
-        'in'  => Token::IN,
+        'is'    => Token::EQUAL,
+        'not'   => Token::NOT_EQUAL,
+        'and'   => Token::AND,
+        'or'    => Token::OR,
+        'in'    => Token::IN,
+        'true'  => Token::BOOLEAN,
+        'false' => Token::BOOLEAN,
     ];
 
     private $expression;

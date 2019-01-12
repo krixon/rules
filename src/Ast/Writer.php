@@ -76,4 +76,10 @@ class Writer implements Visitor
     {
         $this->buffer .= $node->value();
     }
+
+
+    public function visitBoolean(BooleanNode $node)
+    {
+        $this->buffer .= $node->value() ? 'true' : 'false';
+    }
 }

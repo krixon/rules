@@ -33,6 +33,8 @@ class WriterTest extends TestCase
         return [
             ['foo is 42'],
             ['foo is "bar"'],
+            ['foo is true'],
+            ['foo is false'],
             ['foo not "bar"'],
             ['foo in ["bar", "baz"]'],
             [

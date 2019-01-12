@@ -4,8 +4,8 @@ namespace Krixon\Rules\Parser;
 
 use Krixon\Rules\Ast;
 use Krixon\Rules\Exception\SyntaxError;
-use Krixon\Rules\Lexer;
-use Krixon\Rules\Token;
+use Krixon\Rules\Lexer\Lexer;
+use Krixon\Rules\Lexer\Token;
 
 class DefaultParser implements Parser
 {
@@ -158,6 +158,10 @@ class DefaultParser implements Parser
 
         if ($token->is(Token::STRING)) {
             return new Ast\StringNode($token->value());
+        }
+
+        if ($token->is(Token::BOOLEAN)) {
+            return $token->value() === 'true' ? Ast\BooleanNode::true() : Ast\BooleanNode::false();
         }
 
         return new Ast\NumberNode($token->value());

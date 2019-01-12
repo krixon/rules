@@ -121,6 +121,15 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
     }
 
 
+    /**
+     * @throws CompilerError
+     */
+    public function visitBoolean(Ast\BooleanNode $node)
+    {
+        $this->visitLiteral($node);
+    }
+
+
     abstract protected function literal(Ast\IdentifierNode $identifier, Ast\LiteralNode $node) : Spec\Specification;
 
 
