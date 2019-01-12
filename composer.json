@@ -22,8 +22,8 @@
     "require": {
         "php": ">=7.1",
         "ext-mbstring": "*",
-        "ext-intl": "*",
-        "ext-ctype": "*"
+        "ext-ctype": "*",
+        "ext-intl": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^7.4"
