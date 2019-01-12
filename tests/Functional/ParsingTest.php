@@ -98,11 +98,17 @@ class ParsingTest extends TestCase
     {
         return [
             [
-                'foo is (bar is "baz")',
-                "Expected 'LITERAL', got 'LEFT_PAREN'.",
+                '',
+                "Empty expression.",
                 1,
-                8,
+                1,
             ],
+//            [
+//                'foo is (bar is "baz")',
+//                "Expected 'LITERAL', got 'LEFT_PAREN'.",
+//                1,
+//                8,
+//            ],
         ];
     }
 }

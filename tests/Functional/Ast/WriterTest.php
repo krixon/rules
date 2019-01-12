@@ -34,6 +34,7 @@ class WriterTest extends TestCase
             ['foo is 42'],
             ['foo is "bar"'],
             ['foo not "bar"'],
+            ['foo in ["bar", "baz"]'],
             [
                 'foo is 42 and bar is 666',
                 '(foo is 42 and bar is 666)',

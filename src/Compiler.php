@@ -102,6 +102,7 @@ abstract class Compiler implements Ast\Visitor
 
         $this->identifiers->pop();
 
+        // The right hand node has now been compiled into a Specification. Should it be negated?
         if ($node->isNotEqual()) {
             $this->specifications->push(new Spec\Not($this->specifications->pop()));
         }

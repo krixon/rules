@@ -161,6 +161,10 @@ class CompilingTest extends TestCase
                     )
                 )
             ],
+            [
+                'foo.bar is "bar"',
+                $this->identifierMatches('foo.bar', 'bar')
+            ],
         ];
     }
 

@@ -132,10 +132,6 @@ class Lexer
      */
     private function match(string $char) : bool
     {
-        if ($this->eof()) {
-            return false;
-        }
-
         if ($this->peek() !== $char) {
             return false;
         }
@@ -155,7 +151,6 @@ class Lexer
     {
         if (!$this->match('=')) {
             $this->unexpectedCharacter('=');
-            return;
         }
 
         $this->push(Token::EQUAL);
@@ -171,7 +166,6 @@ class Lexer
     {
         if (!$this->match('=')) {
             $this->unexpectedCharacter('=');
-            return;
         }
 
         $this->push(Token::NOT_EQUAL);

@@ -52,6 +52,24 @@ class LexerTest extends TestCase
                 ],
             ],
             [
+                'foo not "bar"',
+                [
+                    new Token(Token::IDENTIFIER, 'foo', 0),
+                    new Token(Token::NOT_EQUAL, 'not', 4),
+                    new Token(Token::STRING, 'bar', 8),
+                    new Token(Token::EOF, null, 13),
+                ],
+            ],
+            [
+                'foo != "bar"',
+                [
+                    new Token(Token::IDENTIFIER, 'foo', 0),
+                    new Token(Token::NOT_EQUAL, '!=', 4),
+                    new Token(Token::STRING, 'bar', 7),
+                    new Token(Token::EOF, null, 12),
+                ],
+            ],
+            [
                 'foo is 1 or foo is 2',
                 [
                     new Token(Token::IDENTIFIER, 'foo', 0),
@@ -148,10 +166,22 @@ class LexerTest extends TestCase
                 5,
             ],
             [
+                'foo => "bar',
+                "Expected '=', got '>'",
+                1,
+                5,
+            ],
+            [
                 'foo is "bar',
                 "Unterminated string",
                 1,
                 12,
+            ],
+            [
+                '~',
+                "Invalid token",
+                1,
+                1,
             ],
         ];
     }

@@ -27,7 +27,10 @@ class ExpressionParser implements Parser
         $this->pointer    = 0;
         $this->tokens     = $this->lexer->tokenize($this->expression);
 
-        if (empty($this->tokens)) {
+        // Check for an empty expression explicitly.
+        // This is not technically necessary, but allows for a more helpful error message over the more
+        // generic "Expected 'IDENTIFIER', got 'EOF'." that would otherwise be produced.
+        if ($this->token()->is(Token::EOF)) {
             throw new SyntaxError('Empty expression.', '', 0);
         }
 
