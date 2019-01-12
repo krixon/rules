@@ -2,7 +2,7 @@
 
 namespace Krixon\Rules\Ast;
 
-class ComparisonNode extends Node
+class ComparisonNode implements Node
 {
     private const EQUAL     = 0;
     private const NOT_EQUAL = 1;

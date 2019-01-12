@@ -4,8 +4,8 @@ namespace Krixon\Rules\Tests\Functional;
 
 use Krixon\Rules\Ast\IdentifierNode;
 use Krixon\Rules\Ast\LiteralNode;
-use Krixon\Rules\Compiler;
-use Krixon\Rules\ExpressionParser;
+use Krixon\Rules\Compiler\BaseCompiler;
+use Krixon\Rules\Parser\DefaultParser;
 use Krixon\Rules\Specification\Composite;
 use Krixon\Rules\Specification\Not;
 use Krixon\Rules\Specification\Specification;
@@ -18,7 +18,7 @@ class CompilingTest extends TestCase
      */
     public function testCompiles(string $expression, Specification $expected)
     {
-        $parser        = new ExpressionParser();
+        $parser        = new DefaultParser();
         $ast           = $parser->parse($expression);
         $specification = $this->compiler()->compile($ast);
 
@@ -169,13 +169,13 @@ class CompilingTest extends TestCase
     }
 
 
-    private function compiler() : Compiler
+    private function compiler() : BaseCompiler
     {
         $fn = function (string $identifier, $value) : Specification {
             return $this->identifierMatches($identifier, $value);
         };
 
-        return new class ($fn) extends Compiler
+        return new class ($fn) extends BaseCompiler
         {
             private $fn;
 

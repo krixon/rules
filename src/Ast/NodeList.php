@@ -2,7 +2,7 @@
 
 namespace Krixon\Rules\Ast;
 
-class NodeList extends Node implements \Countable
+class NodeList implements Node, \Countable
 {
     private $nodes;
 

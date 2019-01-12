@@ -2,7 +2,7 @@
 
 namespace Krixon\Rules\Ast;
 
-class LogicalNode extends Node
+class LogicalNode implements Node
 {
     private const AND = 0;
     private const OR  = 1;

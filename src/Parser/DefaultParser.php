@@ -1,10 +1,13 @@
 <?php
 
-namespace Krixon\Rules;
+namespace Krixon\Rules\Parser;
 
+use Krixon\Rules\Ast;
 use Krixon\Rules\Exception\SyntaxError;
+use Krixon\Rules\Lexer;
+use Krixon\Rules\Token;
 
-class ExpressionParser implements Parser
+class DefaultParser implements Parser
 {
     /**
      * @var Token[]

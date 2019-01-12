@@ -2,7 +2,7 @@
 
 namespace Krixon\Rules\Ast;
 
-class IdentifierNode extends Node
+class IdentifierNode implements Node
 {
     private $name;
     private $subIdentifier;

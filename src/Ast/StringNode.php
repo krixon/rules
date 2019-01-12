@@ -2,7 +2,7 @@
 
 namespace Krixon\Rules\Ast;
 
-class StringNode extends Node implements LiteralNode
+class StringNode implements LiteralNode
 {
     private $value;
 

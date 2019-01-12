@@ -1,47 +1,32 @@
 <?php
 
-namespace Krixon\Rules;
+namespace Krixon\Rules\Compiler;
 
 use Krixon\Rules\Ast;
 use Krixon\Rules\Exception\CompilerError;
 use Krixon\Rules\Specification as Spec;
 
-abstract class Compiler implements Ast\Visitor
+abstract class BaseCompiler implements Compiler, Ast\Visitor
 {
     /**
-     * @var \SplStack
+     * @var SpecificationStack
      */
     private $specifications;
 
     /**
-     * @var \SplStack
+     * @var IdentifierNodeStack
      */
     private $identifiers;
 
 
-    /**
-     * Compiles an AST into a Specification.
-     *
-     * @throws CompilerError
-     */
     public function compile(Ast\Node $node) : Spec\Specification
     {
-        $this->specifications = new \SplStack();
-        $this->identifiers    = new \SplStack();
+        $this->specifications = new SpecificationStack();
+        $this->identifiers    = new IdentifierNodeStack();
 
         $node->accept($this);
 
-        $root = $this->specifications->pop();
-
-        if ($this->specifications->count() !== 0) {
-            throw new CompilerError('Left over specifications in the stack.');
-        }
-
-        if ($this->identifiers->count() !== 0) {
-            throw new CompilerError('Left over identifiers in the stack.');
-        }
-
-        return $root;
+        return $this->specifications->pop();
     }
 
 
@@ -51,6 +36,9 @@ abstract class Compiler implements Ast\Visitor
     }
 
 
+    /**
+     * @throws CompilerError
+     */
     public function visitNodeList(Ast\NodeList $node) : void
     {
         foreach ($node->nodes() as $child) {
@@ -70,6 +58,9 @@ abstract class Compiler implements Ast\Visitor
     }
 
 
+    /**
+     * @throws CompilerError
+     */
     public function visitLogical(Ast\LogicalNode $node) : void
     {
         $node->right()->accept($this);
@@ -95,6 +86,9 @@ abstract class Compiler implements Ast\Visitor
     }
 
 
+    /**
+     * @throws CompilerError
+     */
     public function visitComparison(Ast\ComparisonNode $node) : void
     {
         $node->left()->accept($this);
@@ -109,12 +103,18 @@ abstract class Compiler implements Ast\Visitor
     }
 
 
+    /**
+     * @throws CompilerError
+     */
     public function visitString(Ast\StringNode $node) : void
     {
         $this->visitLiteral($node);
     }
 
 
+    /**
+     * @throws CompilerError
+     */
     public function visitNumber(Ast\NumberNode $node) : void
     {
         $this->visitLiteral($node);
@@ -124,9 +124,11 @@ abstract class Compiler implements Ast\Visitor
     abstract protected function literal(Ast\IdentifierNode $identifier, Ast\LiteralNode $node) : Spec\Specification;
 
 
+    /**
+     * @throws CompilerError
+     */
     private function visitLiteral(Ast\LiteralNode $node) : void
     {
-        /** @var Ast\IdentifierNode $identifier */
         $identifier    = $this->identifiers->top();
         $specification = $this->literal($identifier, $node);
 

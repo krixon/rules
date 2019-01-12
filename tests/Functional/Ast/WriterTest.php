@@ -3,7 +3,7 @@
 namespace Krixon\Rules\Tests\Functional\Ast;
 
 use Krixon\Rules\Ast\Writer;
-use Krixon\Rules\ExpressionParser;
+use Krixon\Rules\Parser\DefaultParser;
 use PHPUnit\Framework\TestCase;
 
 class WriterTest extends TestCase
@@ -22,7 +22,7 @@ class WriterTest extends TestCase
             $expected = $expression;
         }
 
-        $ast = (new ExpressionParser())->parse($expression);
+        $ast = (new DefaultParser())->parse($expression);
 
         static::assertSame($expected, (new Writer())->write($ast));
     }

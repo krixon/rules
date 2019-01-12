@@ -3,7 +3,7 @@
 namespace Krixon\Rules\Tests\Functional;
 
 use Krixon\Rules\Exception\SyntaxError;
-use Krixon\Rules\ExpressionParser;
+use Krixon\Rules\Parser\DefaultParser;
 use Krixon\Rules\Ast;
 use PHPUnit\Framework\TestCase;
 
@@ -14,7 +14,7 @@ class ParsingTest extends TestCase
      */
     public function testExpectedAstIsProduced(string $expression, Ast\Node $expected)
     {
-        $parser = new ExpressionParser();
+        $parser = new DefaultParser();
         $ast    = $parser->parse($expression);
 
         static::assertEquals($expected, $ast);
@@ -78,7 +78,7 @@ class ParsingTest extends TestCase
      */
     public function testReportsErrors(string $expression, string $message, int $line, int $column)
     {
-        $parser = new ExpressionParser();
+        $parser = new DefaultParser();
 
         static::expectException(SyntaxError::class);
 

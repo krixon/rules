@@ -2,7 +2,7 @@
 
 namespace Krixon\Rules\Ast;
 
-abstract class Node
+interface Node
 {
-    abstract public function accept(Visitor $visitor) : void;
+    public function accept(Visitor $visitor) : void;
 }
