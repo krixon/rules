@@ -76,6 +76,7 @@ class Lexer
             case '=': $this->eq();     break;
             case '!': $this->neq();    break;
             case '"': $this->string(); break;
+            case '/': $this->comment(); break;
 
             default:
                 if (ctype_digit($char)) {
@@ -101,11 +102,13 @@ class Lexer
 
 
     /**
-     * Consumes the current character and advances the cursor to the next.
+     * Advances the cursor by n characters.
+     *
+     * @param int $n The number of characters to consume. The default of 1 will consume the current character only.
      */
-    private function consume() : void
+    private function consume(int $n = 1) : void
     {
-        $this->current++;
+        $this->current += $n;
     }
 
 
@@ -113,10 +116,12 @@ class Lexer
      * Peeks at a character without advancing the cursor.
      *
      * @param int $offset The number of characters ahead to peek. Defaults to 0 to peek at the current character.
+     * @param int $length The maximum number of characters to return. Fewer characters will be returned if not enough
+     *                    remain in the expression from the specified offset.
      *
      * @return string|null The character or null of the offset results in a position before or after the expression.
      */
-    private function peek(int $offset = 0) : ?string
+    private function peek(int $offset = 0, int $length = 1) : ?string
     {
         $position = $this->current + $offset;
 
@@ -124,7 +129,7 @@ class Lexer
             return null;
         }
 
-        return mb_substr($this->expression, $position, 1);
+        return mb_substr($this->expression, $position, $length);
     }
 
 
@@ -196,6 +201,62 @@ class Lexer
         $this->consume();
 
         $this->push(Token::STRING, $value);
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
+    private function comment() : void
+    {
+        if ($this->match('/')) {
+            $this->lineComment();
+        } elseif ($this->match('*')) {
+            $this->blockComment();
+        }
+    }
+
+
+    private function lineComment() : void
+    {
+        while ($this->peek() !== "\n" && !$this->eof()) {
+            $this->advance();
+        }
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
+    private function blockComment() : void
+    {
+        /* This kind of comment continues until it is closed. It can also be nested. */
+        $balance = 1;
+
+        while (!$this->eof()) {
+            $current = $this->peek();
+            $next    = $this->peek(1);
+
+            if ($current === '*' && $next === '/') {
+                --$balance;
+            } elseif ($current === '/' && $next === '*') {
+                ++$balance;
+            } elseif ($current === "\n") {
+                ++$this->lineNumber;
+            }
+
+            if ($balance === 0) {
+                break;
+            }
+
+            $this->consume();
+        }
+
+        if ($this->peek(0, 2) === '*/') {
+            $this->consume(2);
+        } else {
+            throw new SyntaxError('Unclosed block comment.', $this->expression, $this->current);
+        }
     }
 
 

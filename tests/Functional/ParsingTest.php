@@ -55,15 +55,71 @@ class ParsingTest extends TestCase
                     )
                 )
             ],
-            [
+            'Nested identifiers, 1 level' => [
                 'foo.bar is "baz"',
                 Ast\ComparisonNode::equal(
                     new Ast\IdentifierNode('foo', new Ast\IdentifierNode('bar')),
                     new Ast\StringNode('baz')
                 )
             ],
-            [
+            'Nested identifiers, 2 levels' => [
+                'foo.bar.baz is "qux"',
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo', new Ast\IdentifierNode('bar', new Ast\IdentifierNode('baz'))),
+                    new Ast\StringNode('qux')
+                )
+            ],
+            'Boolean true' => [
                 'foo is true',
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    Ast\BooleanNode::true()
+                )
+            ],
+            'Comments are removed, // on own line' => [
+                "// a comment\nfoo is true",
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    Ast\BooleanNode::true()
+                )
+            ],
+            'Comments are removed, // at end of line' => [
+                'foo is true // a comment',
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    Ast\BooleanNode::true()
+                )
+            ],
+            'Comments are removed, /**/ on own line' => [
+                "/* a comment */\nfoo is true",
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    Ast\BooleanNode::true()
+                )
+            ],
+            'Comments are removed, /**/ at start of line' => [
+                '/* a comment */ foo is true',
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    Ast\BooleanNode::true()
+                )
+            ],
+            'Comments are removed, /**/ at end of line' => [
+                'foo is true /* a comment */',
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    Ast\BooleanNode::true()
+                )
+            ],
+            'Comments are removed, /**/ within line' => [
+                'foo is /* a comment */ true',
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    Ast\BooleanNode::true()
+                )
+            ],
+            'Comments are removed, /**/ nested' => [
+                'foo is /* a /* nest/*e*/d */ comment */ true',
                 Ast\ComparisonNode::equal(
                     new Ast\IdentifierNode('foo'),
                     Ast\BooleanNode::true()
@@ -115,6 +171,12 @@ class ParsingTest extends TestCase
                 "Expected 'LITERAL', got 'LEFT_PAREN'.",
                 1,
                 8,
+            ],
+            [
+                '/* comment',
+                "Unclosed block comment.",
+                1,
+                11,
             ],
         ];
     }
