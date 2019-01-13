@@ -24,11 +24,32 @@ class ParsingTest extends TestCase
     public function validExpressionProvider()
     {
         return [
-            [
+            'String' => [
                 'foo is "bar"',
                 Ast\ComparisonNode::equal(
                     new Ast\IdentifierNode('foo'),
                     new Ast\StringNode('bar')
+                )
+            ],
+            'String with escape sequences' => [
+                'foo is "b\"a\\z"',
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\StringNode('b"a\z')
+                )
+            ],
+            'Multiline string using escape sequences' => [
+                'foo is "b\na\nr"',
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\StringNode("b\na\nr")
+                )
+            ],
+            'Multiline string using literal newline character' => [
+                "foo is \"b\na\nr\"",
+                Ast\ComparisonNode::equal(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\StringNode("b\na\nr")
                 )
             ],
             [
@@ -177,6 +198,18 @@ class ParsingTest extends TestCase
                 "Unclosed block comment.",
                 1,
                 11,
+            ],
+            [
+                '"foo',
+                'Unterminated string',
+                1,
+                5
+            ],
+            [
+                "\"foo\nbar \nbaz",
+                'Unterminated string',
+                3,
+                4
             ],
         ];
     }

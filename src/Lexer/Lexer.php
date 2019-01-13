@@ -16,10 +16,15 @@ class Lexer
         'false' => Token::BOOLEAN,
     ];
 
+    private const ESCAPE_SEQUENCES = [
+        '"'  => '"',
+        '\\' => '\\',
+        'n'  => "\n",
+        't'  => "\t",
+    ];
+
     private $expression;
     private $tokens        = [];
-    private $lineNumber    = 1;  // The current line number. 1-based.
-    private $lineOffset    = 0;  // The offset into $expression of the start of the current line.
     private $tokenStart    = 0;  // The position of the start of the current token.
     private $current       = 0;  // The current cursor position (the offset into $expression).
     private $expressionEnd = 0;  // The position of the end of the expression.
@@ -57,10 +62,7 @@ class Lexer
             case ' ':
             case "\r":
             case "\t":
-                break;
             case "\n":
-                $this->lineNumber++;
-                $this->lineOffset = $this->current;
                 break;
 
             case '(': $this->push(Token::LEFT_PAREN);    break;
@@ -186,9 +188,22 @@ class Lexer
      */
     private function string()
     {
-        // TODO: Escape sequences?
+        $buffer = '';
 
         while ($this->peek() !== '"' && !$this->eof()) {
+            $current = $this->peek();
+
+            // Handle escape sequences.
+            if ($current === '\\') {
+                $next = $this->peek(1);
+                if (array_key_exists($next, self::ESCAPE_SEQUENCES)) {
+                    $current = self::ESCAPE_SEQUENCES[$next];
+                    $this->consume();
+                }
+            }
+
+            $buffer .= $current;
+
             $this->consume();
         }
 
@@ -196,11 +211,9 @@ class Lexer
             throw new SyntaxError('Unterminated string.', $this->expression, $this->current);
         }
 
-        $value = mb_substr($this->expression, $this->tokenStart + 1, $this->current - $this->tokenStart - 1);
-
         $this->consume();
 
-        $this->push(Token::STRING, $value);
+        $this->push(Token::STRING, $buffer);
     }
 
 
@@ -234,15 +247,12 @@ class Lexer
         $balance = 1;
 
         while (!$this->eof()) {
-            $current = $this->peek();
-            $next    = $this->peek(1);
+            $chars = $this->peek(0, 2);
 
-            if ($current === '*' && $next === '/') {
+            if ($chars === '*/') {
                 --$balance;
-            } elseif ($current === '/' && $next === '*') {
+            } elseif ($chars === '/*') {
                 ++$balance;
-            } elseif ($current === "\n") {
-                ++$this->lineNumber;
             }
 
             if ($balance === 0) {
@@ -376,8 +386,6 @@ class Lexer
     {
         $this->expression    = $expression;
         $this->tokens        = [];
-        $this->lineNumber    = 1;
-        $this->lineOffset    = 0;
         $this->tokenStart    = 0;
         $this->current       = 0;
         $this->expressionEnd = mb_strlen($expression);
