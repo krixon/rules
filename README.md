@@ -33,3 +33,52 @@ $ git clone https://github.com/krixon/rules.git
 # SSH
 $ git clone git@github.com:krixon/rules.git
 ```
+
+# Usage
+
+The main task involved in using this library is implementing `BaseCompiler::literal()`. This method has the following
+signature:
+
+```php
+public function literal(IdentifierNode $identifier, LiteralNode $node) : Specification
+```
+
+Its job is to take an identifier and a corresponding literal value and to return a Specification object.
+
+For example, imagine you have the following Specification which can be applied to a `User` object:
+
+```php
+class EmailAddressMatches implements Specification
+{
+    private $email;
+    
+    
+    public function __construct(string $email)
+    {
+        $this->email = $email;
+    }
+    
+    
+    public function isSatisfiedBy($value) : bool
+    {
+        return $value instanceof User && $value->hasEmailAddress($this->email);
+    }
+}
+```
+
+You can define a rule for this Specification as `email is "karl.rixon@gmail.com"`. When compiling this rule, the
+`BaseCompiler` will invoke `literal()` with an `IdentifierNode` containing the value `email` and a `StringNode`
+containing the value `karl.rixon@gmail.com`. The `literal()` method might be implemented as follows:
+
+```php
+public function literal(IdentifierNode $identifier, LiteralNode $node) : Specification
+{
+    switch (strtolower($identifier->fullName())) {
+        case 'email':
+            return new EmailAddressMatches($node->value());
+        // case ...
+    }
+
+    throw new CompilerError(sprintf("Unknown identifier '%s'.", $identifier->fullName()));
+}
+```
