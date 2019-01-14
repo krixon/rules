@@ -43,9 +43,22 @@ class SyntaxError extends \Exception
     }
 
 
-    public static function unexpectedToken(string $context, string $expected, Token $actual) : self
+    public static function unexpectedToken(string $context, $expected, Token $actual = null) : self
     {
-        return self::unexpectedCharacter($context, $expected, $actual->type(), $actual->position());
+        if (is_array($expected)) {
+            sort($expected);
+            $expected = implode(" | ", $expected);
+        }
+
+        if ($actual) {
+            $token    = $actual->type();
+            $position = $actual->position();
+        } else {
+            $token    = $expected === Token::EOF ? 'NOTHING' : Token::EOF;
+            $position = mb_strlen($context);
+        }
+
+        return self::unexpectedCharacter($context, $expected, $token, $position);
     }
 
 

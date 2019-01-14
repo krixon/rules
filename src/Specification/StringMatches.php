@@ -15,6 +15,15 @@ class StringMatches implements Specification
 
     public function isSatisfiedBy($value) : bool
     {
-        return $this->string === $value;
+        return $this->string === $this->extract($value);
+    }
+
+
+    /**
+     * Override this method to extract the string which will be compared against the desired value.
+     */
+    protected function extract($value) : string
+    {
+        return $value;
     }
 }

@@ -8,53 +8,21 @@ use Krixon\Rules\Specification as Spec;
 
 abstract class BaseCompiler implements Compiler, Ast\Visitor
 {
+    use Ast\VisitsAst;
+
     /**
      * @var SpecificationStack
      */
     private $specifications;
 
-    /**
-     * @var IdentifierNodeStack
-     */
-    private $identifiers;
-
 
     public function compile(Ast\Node $node) : Spec\Specification
     {
         $this->specifications = new SpecificationStack();
-        $this->identifiers    = new IdentifierNodeStack();
 
         $node->accept($this);
 
         return $this->specifications->pop();
-    }
-
-
-    public function visitIdentifier(Ast\IdentifierNode $node) : void
-    {
-        $this->identifiers->push($node);
-    }
-
-
-    /**
-     * @throws CompilerError
-     */
-    public function visitNodeList(Ast\NodeList $node) : void
-    {
-        foreach ($node->nodes() as $child) {
-            $child->accept($this);
-        }
-
-        $children = [];
-        $n        = $node->count();
-
-        while ($n--) {
-            $children[] = $this->specifications->pop();
-        }
-
-        $children = array_reverse($children);
-
-        $this->specifications->push(Spec\Composite::or(...$children));
     }
 
 
@@ -91,56 +59,23 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
      */
     public function visitComparison(Ast\ComparisonNode $node) : void
     {
-        $node->left()->accept($this);
-        $node->right()->accept($this);
-
-        $this->identifiers->pop();
-
-        // The right hand node has now been compiled into a Specification. Should it be negated?
-        if ($node->isNotEqual()) {
-            $this->specifications->push(new Spec\Not($this->specifications->pop()));
-        }
+        $this->specifications->push($this->generate($node));
     }
 
 
     /**
      * @throws CompilerError
      */
-    public function visitString(Ast\StringNode $node) : void
+    public function visitNegation(Ast\NegationNode $node) : void
     {
-        $this->visitLiteral($node);
+        $node->negated()->accept($this);
+
+        $this->specifications->push(new Spec\Not($this->specifications->pop()));
     }
 
 
     /**
-     * @throws CompilerError
+     * @throws CompilerError If a Specification cannot be generated.
      */
-    public function visitNumber(Ast\NumberNode $node) : void
-    {
-        $this->visitLiteral($node);
-    }
-
-
-    /**
-     * @throws CompilerError
-     */
-    public function visitBoolean(Ast\BooleanNode $node)
-    {
-        $this->visitLiteral($node);
-    }
-
-
-    abstract protected function literal(Ast\IdentifierNode $identifier, Ast\LiteralNode $node) : Spec\Specification;
-
-
-    /**
-     * @throws CompilerError
-     */
-    private function visitLiteral(Ast\LiteralNode $node) : void
-    {
-        $identifier    = $this->identifiers->top();
-        $specification = $this->literal($identifier, $node);
-
-        $this->specifications->push($specification);
-    }
+    abstract protected function generate(Ast\ComparisonNode $comparison) : Spec\Specification;
 }

@@ -7,13 +7,14 @@ use Krixon\Rules\Exception\SyntaxError;
 class Lexer
 {
     private const KEYWORDS = [
-        'is'    => Token::EQUAL,
-        'not'   => Token::NOT_EQUAL,
-        'and'   => Token::AND,
-        'or'    => Token::OR,
-        'in'    => Token::IN,
-        'true'  => Token::BOOLEAN,
-        'false' => Token::BOOLEAN,
+        'is'      => Token::EQUALS,
+        'not'     => Token::NOT,
+        'and'     => Token::AND,
+        'or'      => Token::OR,
+        'in'      => Token::IN,
+        'true'    => Token::BOOLEAN,
+        'false'   => Token::BOOLEAN,
+        'matches' => Token::MATCHES,
     ];
 
     private const ESCAPE_SEQUENCES = [
@@ -54,7 +55,7 @@ class Lexer
     /**
      * @throws SyntaxError
      */
-    public function next() : void
+    private function next() : void
     {
         $char = $this->advance();
 
@@ -72,8 +73,8 @@ class Lexer
             case '.': $this->push(Token::DOT);           break;
             case ',': $this->push(Token::COMMA);         break;
 
-            case '<': $this->push($this->match('=') ? Token::LESS_EQUAL    : Token::LESS);    break;
-            case '>': $this->push($this->match('=') ? Token::GREATER_EQUAL : Token::GREATER); break;
+            case '<': $this->push($this->match('=') ? Token::LESS_EQUALS    : Token::LESS);    break;
+            case '>': $this->push($this->match('=') ? Token::GREATER_EQUALS : Token::GREATER); break;
 
             case '=': $this->eq();     break;
             case '!': $this->neq();    break;
@@ -162,7 +163,7 @@ class Lexer
             $this->unexpectedCharacter('=');
         }
 
-        $this->push(Token::EQUAL);
+        $this->push(Token::EQUALS);
     }
 
 
@@ -177,7 +178,7 @@ class Lexer
             $this->unexpectedCharacter('=');
         }
 
-        $this->push(Token::NOT_EQUAL);
+        $this->push(Token::NOT);
     }
 
 
@@ -302,7 +303,6 @@ class Lexer
             $this->advance();
         }
 
-        // Check if the identifier is a keyword.
         $value = $this->lexeme();
 
         if (array_key_exists($value, self::KEYWORDS)) {

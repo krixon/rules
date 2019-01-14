@@ -2,25 +2,26 @@
 
 namespace Krixon\Rules\Tests\Functional;
 
-use Krixon\Rules\Ast\IdentifierNode;
-use Krixon\Rules\Ast\LiteralNode;
-use Krixon\Rules\Compiler\BaseCompiler;
+use Krixon\Rules\Ast\ComparisonNode;
+use Krixon\Rules\Compiler\DelegatingCompiler;
+use Krixon\Rules\Compiler\SpecificationGenerator;
 use Krixon\Rules\Parser\DefaultParser;
 use Krixon\Rules\Specification\Composite;
 use Krixon\Rules\Specification\Not;
 use Krixon\Rules\Specification\Specification;
 use PHPUnit\Framework\TestCase;
 
-class CompilingTest extends TestCase
+class CompilingTest extends TestCase implements SpecificationGenerator
 {
     /**
      * @dataProvider dataProvider
      */
     public function testCompiles(string $expression, Specification $expected)
     {
+        $compiler      = new DelegatingCompiler($this);
         $parser        = new DefaultParser();
         $ast           = $parser->parse($expression);
-        $specification = $this->compiler()->compile($ast);
+        $specification = $compiler->compile($ast);
 
         static::assertEquals($expected, $specification);
     }
@@ -28,200 +29,217 @@ class CompilingTest extends TestCase
 
     public function dataProvider()
     {
+        $eq      = ComparisonNode::EQUALS;
+        $gt      = ComparisonNode::GREATER;
+        $gte     = ComparisonNode::GREATER_EQUALS;
+        $lt      = ComparisonNode::LESS;
+        $lte     = ComparisonNode::LESS_EQUALS;
+        $matches = ComparisonNode::MATCHES;
+        $in      = ComparisonNode::IN;
+
         return [
             [
                 'foo is "bar"',
-                $this->identifierMatches('foo', 'bar')
+                $this->stub('foo', $eq, 'bar')
             ],
             [
                 'foo is true',
-                $this->identifierMatches('foo', true)
+                $this->stub('foo', $eq, true)
             ],
             [
                 'foo is false',
-                $this->identifierMatches('foo', false)
+                $this->stub('foo', $eq, false)
+            ],
+            [
+                'foo matches "/pattern/i"',
+                $this->stub('foo', $matches, '/pattern/i')
+            ],
+            [
+                'foo > 1',
+                $this->stub('foo', $gt, 1)
+            ],
+            [
+                'foo >= 1',
+                $this->stub('foo', $gte, 1)
+            ],
+            [
+                'foo < 1',
+                $this->stub('foo', $lt, 1)
+            ],
+            [
+                'foo <= 1',
+                $this->stub('foo', $lte, 1)
             ],
             [
                 'foo not "bar"',
-                new Not($this->identifierMatches('foo', 'bar'))
+                new Not($this->stub('foo', $eq, 'bar'))
+            ],
+            [
+                'foo not is "bar"',
+                new Not($this->stub('foo', $eq, 'bar'))
+            ],
+            [
+                'foo not matches "/pattern/i"',
+                new Not($this->stub('foo', $matches, '/pattern/i'))
             ],
             [
                 'foo in ["a", "b", "c"]',
-                Composite::or(
-                    $this->identifierMatches('foo', 'a'),
-                    $this->identifierMatches('foo', 'b'),
-                    $this->identifierMatches('foo', 'c')
-                )
+                $this->stub('foo', $in, ['a', 'b', 'c'])
+            ],
+            [
+                'foo in ["a", 2, 3.5]',
+                $this->stub('foo', $in, ['a', 2, 3.5])
             ],
             [
                 'foo is "bar" or (deep is 1 and (deeper is 2))',
                 Composite::or(
-                    $this->identifierMatches('foo', 'bar'),
+                    $this->stub('foo', $eq, 'bar'),
                     Composite::and(
-                        $this->identifierMatches('deep', 1),
-                        $this->identifierMatches('deeper', 2)
+                        $this->stub('deep', $eq, 1),
+                        $this->stub('deeper', $eq, 2)
                     )
                 )
             ],
             [
                 '(foo is "bar") and (a is 1 or b is 2) and (c is "red" or d is "blue")',
                 Composite::and(
-                    $this->identifierMatches('foo', 'bar'),
+                    $this->stub('foo', $eq, 'bar'),
                     Composite::or(
-                        $this->identifierMatches('a', 1),
-                        $this->identifierMatches('b', 2)
+                        $this->stub('a', $eq, 1),
+                        $this->stub('b', $eq, 2)
                     ),
                     Composite::or(
-                        $this->identifierMatches('c', 'red'),
-                        $this->identifierMatches('d', 'blue')
+                        $this->stub('c', $eq, 'red'),
+                        $this->stub('d', $eq, 'blue')
                     )
                 )
             ],
             [
                 'foo is 1 or foo is 2 or foo is 3 or foo is 4',
                 Composite::or(
-                    $this->identifierMatches('foo', 1),
-                    $this->identifierMatches('foo', 2),
-                    $this->identifierMatches('foo', 3),
-                    $this->identifierMatches('foo', 4)
+                    $this->stub('foo', $eq, 1),
+                    $this->stub('foo', $eq, 2),
+                    $this->stub('foo', $eq, 3),
+                    $this->stub('foo', $eq, 4)
                 )
             ],
             [
                 'foo is 1 or foo is 2 and foo is 3',
                 Composite::and(
                     Composite::or(
-                        $this->identifierMatches('foo', 1),
-                        $this->identifierMatches('foo', 2)
+                        $this->stub('foo', $eq, 1),
+                        $this->stub('foo', $eq, 2)
                     ),
-                    $this->identifierMatches('foo', 3)
+                    $this->stub('foo', $eq, 3)
                 )
             ],
             [
                 '(foo is 1 or foo is 2) and foo is 3',
                 Composite::and(
                     Composite::or(
-                        $this->identifierMatches('foo', 1),
-                        $this->identifierMatches('foo', 2)
+                        $this->stub('foo', $eq, 1),
+                        $this->stub('foo', $eq, 2)
                     ),
-                    $this->identifierMatches('foo', 3)
+                    $this->stub('foo', $eq, 3)
                 )
             ],
             [
                 'foo is 1 or (foo is 2 and foo is 3)',
                 Composite::or(
-                    $this->identifierMatches('foo', 1),
+                    $this->stub('foo', $eq, 1),
                     Composite::and(
-                        $this->identifierMatches('foo', 2),
-                        $this->identifierMatches('foo', 3)
+                        $this->stub('foo', $eq, 2),
+                        $this->stub('foo', $eq, 3)
                     )
                 )
             ],
             [
                 'foo is 1 or (foo is 2 and foo is 3 and (foo is 4 and foo is 5))',
                 Composite::or(
-                    $this->identifierMatches('foo', 1),
+                    $this->stub('foo', $eq, 1),
                     Composite::and(
-                        $this->identifierMatches('foo', 2),
-                        $this->identifierMatches('foo', 3),
-                        $this->identifierMatches('foo', 4),
-                        $this->identifierMatches('foo', 5)
+                        $this->stub('foo', $eq, 2),
+                        $this->stub('foo', $eq, 3),
+                        $this->stub('foo', $eq, 4),
+                        $this->stub('foo', $eq, 5)
                     )
                 )
             ],
             [
                 'foo is 1 or (foo is 2 and foo is 3 and (foo is 4 and foo is 5 and foo is 6))',
                 Composite::or(
-                    $this->identifierMatches('foo', 1),
+                    $this->stub('foo', $eq, 1),
                     Composite::and(
-                        $this->identifierMatches('foo', 2),
-                        $this->identifierMatches('foo', 3),
-                        $this->identifierMatches('foo', 4),
-                        $this->identifierMatches('foo', 5),
-                        $this->identifierMatches('foo', 6)
+                        $this->stub('foo', $eq, 2),
+                        $this->stub('foo', $eq, 3),
+                        $this->stub('foo', $eq, 4),
+                        $this->stub('foo', $eq, 5),
+                        $this->stub('foo', $eq, 6)
                     )
                 )
             ],
             [
                 'foo is 1 or (foo is 2 and foo is 3 and (foo is 4 and (foo is 5 and foo is 6)))',
                 Composite::or(
-                    $this->identifierMatches('foo', 1),
+                    $this->stub('foo', $eq, 1),
                     Composite::and(
-                        $this->identifierMatches('foo', 2),
-                        $this->identifierMatches('foo', 3),
-                        $this->identifierMatches('foo', 4),
-                        $this->identifierMatches('foo', 5),
-                        $this->identifierMatches('foo', 6)
+                        $this->stub('foo', $eq, 2),
+                        $this->stub('foo', $eq, 3),
+                        $this->stub('foo', $eq, 4),
+                        $this->stub('foo', $eq, 5),
+                        $this->stub('foo', $eq, 6)
                     )
                 )
             ],
             [
                 'foo is 1 or (foo is 2 and foo is 3 and (foo is 4 and (foo is 5 or foo is 6)))',
                 Composite::or(
-                    $this->identifierMatches('foo', 1),
+                    $this->stub('foo', $eq, 1),
                     Composite::and(
-                        $this->identifierMatches('foo', 2),
-                        $this->identifierMatches('foo', 3),
-                        $this->identifierMatches('foo', 4),
+                        $this->stub('foo', $eq, 2),
+                        $this->stub('foo', $eq, 3),
+                        $this->stub('foo', $eq, 4),
                         Composite::or(
-                            $this->identifierMatches('foo', 5),
-                            $this->identifierMatches('foo', 6)
+                            $this->stub('foo', $eq, 5),
+                            $this->stub('foo', $eq, 6)
                         )
                     )
                 )
             ],
             [
                 'foo.bar is "bar"',
-                $this->identifierMatches('foo.bar', 'bar')
+                $this->stub('foo.bar', $eq, 'bar')
             ],
         ];
     }
 
 
-    private function compiler() : BaseCompiler
+    public function attempt(ComparisonNode $comparison) : ?Specification
     {
-        $fn = function (string $identifier, $value) : Specification {
-            return $this->identifierMatches($identifier, $value);
-        };
-
-        return new class ($fn) extends BaseCompiler
-        {
-            private $fn;
-
-
-            public function __construct(\Closure $fn)
-            {
-                $this->fn = $fn;
-            }
-
-
-            protected function literal(IdentifierNode $identifier, LiteralNode $node) : Specification
-            {
-                $fn = $this->fn;
-
-                return $fn($identifier->fullName(), $node->value());
-            }
-        };
+        return $this->stub($comparison->identifierFullName(), $comparison->type(), $comparison->literalValue());
     }
 
 
-    private function identifierMatches(string $identifier, $value)
+    private function stub(string $identifier, string $comparison, $value)
     {
-        return new class ($identifier, $value) implements Specification
+        return new class ($identifier, $comparison, $value) implements Specification
         {
             private $identifier;
+            private $comparison;
             private $value;
 
 
-            public function __construct($identifier, $value)
+            public function __construct(string $identifier, string $comparison, $value)
             {
                 $this->identifier = $identifier;
+                $this->comparison = $comparison;
                 $this->value      = $value;
             }
 
 
             public function isSatisfiedBy($value) : bool
             {
-                return $this->value === $value;
+                return true;
             }
         };
     }

@@ -62,12 +62,6 @@ class Composite implements Specification
     }
 
 
-    public function isOr() : bool
-    {
-        return $this->type === self::OR;
-    }
-
-
     /**
      * @return Specification[]
      */

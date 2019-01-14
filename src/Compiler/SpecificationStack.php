@@ -7,7 +7,10 @@ use Krixon\Rules\Specification\Specification;
 
 class SpecificationStack
 {
-    private $wrapped;
+    /**
+     * @var \SplStack
+     */
+    protected $wrapped;
 
 
     public function __construct()
@@ -30,7 +33,7 @@ class SpecificationStack
         try {
             return $this->wrapped->pop();
         } catch (\RuntimeException $e) {
-            // Thrown when attempting to pop an element off an empty stack.
+            // Thrown when attempting to pop off the top of an empty stack.
             throw new CompilerError('Expected to have a specification but none found. The supplied AST is invalid.');
         }
     }

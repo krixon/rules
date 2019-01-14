@@ -4,50 +4,66 @@ namespace Krixon\Rules\Ast;
 
 class ComparisonNode implements Node
 {
-    private const EQUAL     = 0;
-    private const NOT_EQUAL = 1;
-    private const IN        = 2;
+    public const EQUALS         = 'EQUALS';
+    public const GREATER        = 'GREATER';
+    public const GREATER_EQUALS = 'GREATER_EQUALS';
+    public const LESS           = 'LESS';
+    public const LESS_EQUALS    = 'LESS_EQUALS';
+    public const IN             = 'IN';
+    public const MATCHES        = 'MATCHES';
 
-    private $left;
-    private $right;
+    private $identifier;
+    private $value;
     private $type;
 
 
-    private function __construct(int $type, IdentifierNode $left, Node $right)
+    private function __construct(string $type, IdentifierNode $identifier, LiteralNode $value)
     {
-        $this->left  = $left;
-        $this->right = $right;
-        $this->type  = $type;
+        $this->identifier = $identifier;
+        $this->value      = $value;
+        $this->type       = $type;
     }
 
 
-    public function left() : IdentifierNode
+    public static function equals(IdentifierNode $left, LiteralNode $right) : self
     {
-        return $this->left;
+        return new static(self::EQUALS, $left, $right);
     }
 
 
-    public function right() : Node
+    public static function greaterThan(IdentifierNode $left, LiteralNode $right) : self
     {
-        return $this->right;
+        return new static(self::GREATER, $left, $right);
     }
 
 
-    public static function equal(IdentifierNode $left, Node $right) : self
+    public static function greaterThanOrEqualTo(IdentifierNode $left, LiteralNode $right) : self
     {
-        return new static(self::EQUAL, $left, $right);
+        return new static(self::GREATER_EQUALS, $left, $right);
     }
 
 
-    public static function notEqual(IdentifierNode $left, Node $right) : self
+    public static function lessThan(IdentifierNode $left, LiteralNode $right) : self
     {
-        return new static(self::NOT_EQUAL, $left, $right);
+        return new static(self::LESS, $left, $right);
     }
 
 
-    public static function in(IdentifierNode $left, NodeList $right) : self
+    public static function lessThanOrEqualTo(IdentifierNode $left, LiteralNode $right) : self
+    {
+        return new static(self::LESS_EQUALS, $left, $right);
+    }
+
+
+    public static function in(IdentifierNode $left, LiteralNodeList $right) : self
     {
         return new static(self::IN, $left, $right);
+    }
+
+
+    public static function matches(IdentifierNode $left, StringNode $right) : self
+    {
+        return new static(self::MATCHES, $left, $right);
     }
 
 
@@ -57,20 +73,83 @@ class ComparisonNode implements Node
     }
 
 
-    public function isEqual() : bool
+    public function is(string $type) : bool
     {
-        return $this->type === self::EQUAL;
+        return $this->type === $type;
     }
 
 
-    public function isNotEqual() : bool
+    public function isEquals() : bool
     {
-        return $this->type === self::NOT_EQUAL;
+        return $this->type === self::EQUALS;
+    }
+
+
+    public function isGreaterThan() : bool
+    {
+        return $this->type === self::GREATER;
+    }
+
+
+    public function isGreaterThanOrEqualTo() : bool
+    {
+        return $this->type === self::GREATER_EQUALS;
+    }
+
+
+    public function isLessThan() : bool
+    {
+        return $this->type === self::LESS;
+    }
+
+
+    public function isLessThanOrEqualTo() : bool
+    {
+        return $this->type === self::LESS_EQUALS;
     }
 
 
     public function isIn() : bool
     {
         return $this->type === self::IN;
+    }
+
+
+    public function isMatches() : bool
+    {
+        return $this->type === self::MATCHES;
+    }
+
+
+    public function identifier() : IdentifierNode
+    {
+        return $this->identifier;
+    }
+
+
+    public function identifierFullName() : string
+    {
+        return $this->identifier->fullName();
+    }
+
+
+    public function value() : LiteralNode
+    {
+        return $this->value;
+    }
+
+
+    /**
+     * Returns the actual comparison value represented by the LiteralNode.
+     */
+    public function literalValue()
+    {
+        return $this->value->value();
+    }
+
+
+    public function type() : string
+    {
+        return $this->type;
     }
 }

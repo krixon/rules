@@ -36,6 +36,13 @@ class WriterTest extends TestCase
             ['foo is true'],
             ['foo is false'],
             ['foo not "bar"'],
+            ['foo > 42'],
+            ['foo >= 42'],
+            ['foo < 42'],
+            ['foo <= 42'],
+            ['foo matches "bar"'],
+            ['foo not > 42'],
+            ['foo not matches "bar"'],
             ['foo in ["bar", "baz"]'],
             [
                 'foo is 42 and bar is 666',

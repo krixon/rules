@@ -17,6 +17,17 @@ class NumberMatches implements Specification
 
     public function isSatisfiedBy($value) : bool
     {
+        $value = $this->extract($value);
+
         return is_numeric($value) && abs($this->number - $value) < $this->epsilon;
+    }
+
+
+    /**
+     * Override this method to extract the number which will be compared against the desired value.
+     */
+    protected function extract($value)
+    {
+        return $value;
     }
 }

@@ -36,14 +36,18 @@ $ git clone git@github.com:krixon/rules.git
 
 # Usage
 
-The main task involved in using this library is implementing `BaseCompiler::literal()`. This method has the following
+The main task involved in using this library is implementing `BaseCompiler::generate()`. This method has the following
 signature:
 
 ```php
-public function literal(IdentifierNode $identifier, LiteralNode $node) : Specification
+public function generate(ComparisonNode $comparison) : Specification
 ```
 
-Its job is to take an identifier and a corresponding literal value and to return a Specification object.
+Its job is to generate a `Specification` object from a `ComparisonNode` AST object.
+
+A `ComparisonNode` consists of an `IdentifierNode` which identifies the data against which the specification should
+be checked, and a `LiteralNode` which contains the value to compare against. It also contains information about
+the type of comparison (equals, greater than, etc).
 
 For example, imagine you have the following Specification which can be applied to a `User` object:
 
@@ -66,19 +70,97 @@ class EmailAddressMatches implements Specification
 }
 ```
 
-You can define a rule for this Specification as `email is "karl.rixon@gmail.com"`. When compiling this rule, the
-`BaseCompiler` will invoke `literal()` with an `IdentifierNode` containing the value `email` and a `StringNode`
-containing the value `karl.rixon@gmail.com`. The `literal()` method might be implemented as follows:
+You can define a rule for this Specification as `email is "karl.rixon@gmail.com"`.
+
+In this rule, `email` is an identifier which refers to the user's email address. It is up to you how to interpret a
+given identifier. The string value `email` is converted to an `IdentifierNode` AST node during parsing. This node can
+be accessed via `ComparisonNode::identifier()`.
+
+The comparison operator is `is`, which means "equals". You can use `ComparisonNode::isEquals()`, 
+`ComparisonNode::isLessThan()` etc to determine the comparison type.
+
+Finally, `karl.rixon@gmail.com` is converted into a `StringNode` AST node during parsing. This node can be accessed
+via `ComparisonNode::value()`.
+
+Based on the above, the `BaseCompiler::generate()` method might be implemented as follows:
 
 ```php
-public function literal(IdentifierNode $identifier, LiteralNode $node) : Specification
+class MyCompiler extends BaseCompiler
 {
-    switch (strtolower($identifier->fullName())) {
-        case 'email':
-            return new EmailAddressMatches($node->value());
-        // case ...
-    }
-
-    throw new CompilerError(sprintf("Unknown identifier '%s'.", $identifier->fullName()));
+  public function generate(ComparisonNode $comparison) : Specification
+  {
+      $identifier = $comparison->identifierFullName();
+      
+      if (strtolower($indentifier) !== 'email') {
+          throw CompilerError::unknownIdentifier($identifier);
+      }
+      
+      if (!$comparison->isEquals()) {
+          throw CompilerError::unsupportedComparisonType($comparison->type(), $identifier);
+      }
+  
+      return new EmailAddressMatches($comparison->literalValue());
+  }
 }
+```
+
+## Delegating generation to services
+
+Although extending `BaseCompiler` is convenient in simple cases, it becomes complicated when you have many
+specifications to support. In this case, you might want to delegate the generation work to dedicated services.
+
+The `DelegatingCompiler` class is provided for this purpose. To use it, first create a class which implements the
+`SpecificationGenerator` interface, which defines a single method:
+
+```php
+public function attempt(ComparisonNode $comparison) : ?Specification;
+```
+
+This is very similar to `BaseCompiler::generate()`, however returning a `Specification` is optional.
+
+Next, register an instance of your class with the `DelegatingCompiler`:
+
+```php
+$generator = new EmailAddressGenerator();
+$compiler  = new DelegatingCompiler($generator);
+```
+
+When `DelegatingCompiler::compile()` is invoked, the `DelegatingCompiler` will loop through all registered generators
+and call `SpecificationGenerator::attempt()` with each `ComparisonNode`.
+
+All `SpecificationGenerator`s provided via the `DelegatingCompiler`'s constructor share the same priority of `0`,
+however they can also be registered with an explicit priority:
+
+```php
+$generator = new EmailAddressGenerator();
+$compiler  = new DelegatingCompiler();
+
+$compiler->register($generator, 100); // Priority of 100.
+```
+
+`SpecificationGenerator`s with higher priority are invoked first.
+
+## Negating comparisons
+
+`ComparisonNode` does not expose negated comparisons like `does not equal` and `does not match`. However this is
+supported in the language by adding `not` before the comparison operator:
+
+```
+email not is "karl.rixon@gmail.com"
+```
+```
+address.county not matches "/(east|west)\s+sussex/i"
+```
+```
+age not > 5
+```
+
+You do not need to write any code to handle these cases because the compiler will produce a `Specification` based on
+the non-negated comparison and then wrap the result in a `Not` specification which simply inverts the result of
+`Specification::isSatisfiedBy` returned by the wrapped `Specification`.
+
+A shorthand syntax for `not is` can also be used by simply omitting the `is`:
+
+```
+email not "karl.rixon@gmail.com"
 ```
