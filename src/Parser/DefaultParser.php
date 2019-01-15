@@ -299,7 +299,7 @@ class DefaultParser implements Parser
     }
 
 
-    private function is(string ...$tokenType)
+    private function is(string ...$tokenType) : bool
     {
         $token = $this->token();
 
