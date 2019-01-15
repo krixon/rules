@@ -62,18 +62,6 @@ class ComparisonNodeTest extends TestCase
     }
 
 
-    public function testCanDetermineIfComparisonTypeIs()
-    {
-        static::assertTrue($this->in->is(ComparisonNode::IN));
-        static::assertTrue($this->matches->is(ComparisonNode::MATCHES));
-        static::assertTrue($this->equal->is(ComparisonNode::EQUALS));
-        static::assertTrue($this->lt->is(ComparisonNode::LESS));
-        static::assertTrue($this->lte->is(ComparisonNode::LESS_EQUALS));
-        static::assertTrue($this->gt->is(ComparisonNode::GREATER));
-        static::assertTrue($this->gte->is(ComparisonNode::GREATER_EQUALS));
-    }
-
-
     public function testCanDetermineIfComparisonTypeIsIn()
     {
         static::assertTrue($this->in->isIn());

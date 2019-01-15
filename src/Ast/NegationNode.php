@@ -7,7 +7,7 @@ class NegationNode implements Node
     private $negated;
 
 
-    public function __construct(ComparisonNode $negated)
+    public function __construct(Node $negated)
     {
         $this->negated = $negated;
     }
@@ -19,7 +19,7 @@ class NegationNode implements Node
     }
 
 
-    public function negated() : ComparisonNode
+    public function negated() : Node
     {
         return $this->negated;
     }

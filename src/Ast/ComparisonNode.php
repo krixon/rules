@@ -4,13 +4,13 @@ namespace Krixon\Rules\Ast;
 
 class ComparisonNode implements Node
 {
-    public const EQUALS         = 'EQUALS';
-    public const GREATER        = 'GREATER';
-    public const GREATER_EQUALS = 'GREATER_EQUALS';
-    public const LESS           = 'LESS';
-    public const LESS_EQUALS    = 'LESS_EQUALS';
-    public const IN             = 'IN';
-    public const MATCHES        = 'MATCHES';
+    private const EQUALS         = 'EQUALS';
+    private const GREATER        = 'GREATER';
+    private const GREATER_EQUALS = 'GREATER_EQUALS';
+    private const LESS           = 'LESS';
+    private const LESS_EQUALS    = 'LESS_EQUALS';
+    private const IN             = 'IN';
+    private const MATCHES        = 'MATCHES';
 
     private $identifier;
     private $value;
@@ -70,12 +70,6 @@ class ComparisonNode implements Node
     public function accept(Visitor $visitor) : void
     {
         $visitor->visitComparison($this);
-    }
-
-
-    public function is(string $type) : bool
-    {
-        return $this->type === $type;
     }
 
 
@@ -145,11 +139,5 @@ class ComparisonNode implements Node
     public function literalValue()
     {
         return $this->value->value();
-    }
-
-
-    public function type() : string
-    {
-        return $this->type;
     }
 }

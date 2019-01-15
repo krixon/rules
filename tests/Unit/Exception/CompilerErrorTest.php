@@ -2,7 +2,6 @@
 
 namespace Krixon\Rules\Tests\Unit\Exception;
 
-use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Exception\CompilerError;
 use PHPUnit\Framework\TestCase;
 
@@ -27,7 +26,7 @@ class CompilerErrorTest extends TestCase
 
     public function testProducesExpectedMessageForUnsupportedComparison()
     {
-        $exception = CompilerError::unsupportedComparisonType(ComparisonNode::GREATER, 'foo');
+        $exception = CompilerError::unsupportedComparisonType('GREATER', 'foo');
 
         static::assertSame("Unsupported comparison type 'GREATER' for identifier 'foo'.", $exception->getMessage());
     }

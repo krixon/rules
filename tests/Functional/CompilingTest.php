@@ -29,13 +29,13 @@ class CompilingTest extends TestCase implements SpecificationGenerator
 
     public function dataProvider()
     {
-        $eq      = ComparisonNode::EQUALS;
-        $gt      = ComparisonNode::GREATER;
-        $gte     = ComparisonNode::GREATER_EQUALS;
-        $lt      = ComparisonNode::LESS;
-        $lte     = ComparisonNode::LESS_EQUALS;
-        $matches = ComparisonNode::MATCHES;
-        $in      = ComparisonNode::IN;
+        $eq      = 'EQUALS';
+        $gt      = 'GREATER';
+        $gte     = 'GREATER_EQUALS';
+        $lt      = 'LESS';
+        $lte     = 'LESS_EQUALS';
+        $matches = 'MATCHES';
+        $in      = 'IN';
 
         return [
             [
@@ -216,7 +216,14 @@ class CompilingTest extends TestCase implements SpecificationGenerator
 
     public function attempt(ComparisonNode $comparison) : ?Specification
     {
-        return $this->stub($comparison->identifierFullName(), $comparison->type(), $comparison->literalValue());
+        $ref = new \ReflectionObject($comparison);
+
+        $property = $ref->getProperty('type');
+        $property->setAccessible(true);
+
+        $type = $property->getValue($comparison);
+
+        return $this->stub($comparison->identifierFullName(), $type, $comparison->literalValue());
     }
 
 
