@@ -48,6 +48,18 @@ trait VisitsAst
     }
 
 
+    public function visitDate(DateNode $node) : void
+    {
+
+    }
+
+
+    public function visitTimezone(TimezoneNode $node) : void
+    {
+
+    }
+
+
     public function visitNumber(NumberNode $node) : void
     {
 

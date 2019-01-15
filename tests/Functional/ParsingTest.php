@@ -52,6 +52,34 @@ class ParsingTest extends TestCase
                     new Ast\StringNode("b\na\nr")
                 )
             ],
+            'Date type hint' => [
+                'foo is date:"2000-01-01 12:30:45"',
+                Ast\ComparisonNode::equals(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\DateNode(new \DateTimeImmutable('2000-01-01 12:30:45'))
+                )
+            ],
+            'Date type hint with non-hinted timezone' => [
+                'foo is date:"2000-01-01 12:30:45" in "Asia/Tokyo"',
+                Ast\ComparisonNode::equals(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\DateNode(new \DateTimeImmutable('2000-01-01 12:30:45', new \DateTimeZone('Asia/Tokyo')))
+                )
+            ],
+            'Date type hint with hinted timezone' => [
+                'foo is date:"2000-01-01 12:30:45" in timezone:"Asia/Tokyo"',
+                Ast\ComparisonNode::equals(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\DateNode(new \DateTimeImmutable('2000-01-01 12:30:45', new \DateTimeZone('Asia/Tokyo')))
+                )
+            ],
+            'Timezone type hint' => [
+                'foo is timezone:"Asia/Tokyo"',
+                Ast\ComparisonNode::equals(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\TimezoneNode(new \DateTimeZone('Asia/Tokyo'))
+                )
+            ],
             [
                 'foo is "bar" or foo is "baz"',
                 Ast\LogicalNode::or(
@@ -94,56 +122,56 @@ class ParsingTest extends TestCase
                 'foo is true',
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    Ast\BooleanNode::true()
+                    New Ast\BooleanNode(true)
                 )
             ],
             'Comments are removed, // on own line' => [
                 "// a comment\nfoo is true",
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    Ast\BooleanNode::true()
+                    New Ast\BooleanNode(true)
                 )
             ],
             'Comments are removed, // at end of line' => [
                 'foo is true // a comment',
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    Ast\BooleanNode::true()
+                    New Ast\BooleanNode(true)
                 )
             ],
             'Comments are removed, /**/ on own line' => [
                 "/* a comment */\nfoo is true",
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    Ast\BooleanNode::true()
+                    New Ast\BooleanNode(true)
                 )
             ],
             'Comments are removed, /**/ at start of line' => [
                 '/* a comment */ foo is true',
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    Ast\BooleanNode::true()
+                    New Ast\BooleanNode(true)
                 )
             ],
             'Comments are removed, /**/ at end of line' => [
                 'foo is true /* a comment */',
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    Ast\BooleanNode::true()
+                    New Ast\BooleanNode(true)
                 )
             ],
             'Comments are removed, /**/ within line' => [
                 'foo is /* a comment */ true',
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    Ast\BooleanNode::true()
+                    New Ast\BooleanNode(true)
                 )
             ],
             'Comments are removed, /**/ nested' => [
                 'foo is /* a /* nest/*e*/d */ comment */ true',
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    Ast\BooleanNode::true()
+                    New Ast\BooleanNode(true)
                 )
             ],
         ];
@@ -210,6 +238,24 @@ class ParsingTest extends TestCase
                 'Unterminated string',
                 3,
                 4
+            ],
+            'Invalid date' => [
+                'foo is date:"not a date"',
+                'Invalid date literal',
+                1,
+                13
+            ],
+            'Invalid timezone' => [
+                'foo is timezone:"not a timezone"',
+                'Invalid timezone literal',
+                1,
+                17
+            ],
+            'Invalid type hint' => [
+                'foo is invalidhint:"bar"',
+                "Expected 'date | timezone', got 'IDENTIFIER'.",
+                1,
+                8
             ],
         ];
     }

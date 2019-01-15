@@ -9,6 +9,14 @@ use Krixon\Rules\Lexer\Token;
 
 class DefaultParser implements Parser
 {
+    private const HINT_DATE     = 'date';
+    private const HINT_TIMEZONE = 'timezone';
+
+    private const HINTS = [
+        self::HINT_DATE,
+        self::HINT_TIMEZONE,
+    ];
+
     /**
      * @var Token[]
      */
@@ -212,6 +220,22 @@ class DefaultParser implements Parser
      */
     private function parseLiteral() : Ast\LiteralNode
     {
+        // Literals can be prefixed with a specific type hint, e.g. date:"1st Jan 2019".
+        // This can affect the type of LiteralNode which is produced.
+
+        $type = $this->parseLiteralTypeHint();
+
+        if ($type === 'date') {
+            return $this->parseDateLiteral();
+        }
+
+        if ($type === 'timezone') {
+            return $this->parseTimezoneLiteral();
+        }
+
+        // Type hints for other types are unsupported as they have distinct literal representations
+        // which correspond to specific Tokens.
+
         $this->matchLiteral();
 
         $token = $this->token();
@@ -223,10 +247,95 @@ class DefaultParser implements Parser
         }
 
         if ($token->is(Token::BOOLEAN)) {
-            return $token->value() === 'true' ? Ast\BooleanNode::true() : Ast\BooleanNode::false();
+            return new Ast\BooleanNode($token->value() === 'true');
         }
 
         return new Ast\NumberNode($token->value());
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
+    private function parseLiteralTypeHint(string ...$allowed) : ?string
+    {
+        $type = null;
+
+        if ($this->is(Token::IDENTIFIER)) {
+            $this->matchLiteralTypeHint(...$allowed);
+            $type = $this->token()->value();
+            $this->next();
+
+            $this->match(Token::COLON);
+            $this->next();
+        }
+
+        return $type;
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
+    private function parseDateLiteral() : Ast\DateNode
+    {
+        $this->match(TOKEN::STRING);
+
+        $token = $this->token();
+
+        $this->next();
+
+        // Allow an optional timezone to be specified using 'in timezone:"<tz>"'.
+
+        $timezone = null;
+
+        if ($this->is(Token::IN)) {
+            $this->next();
+
+            // The type hint is optional, but must be "timezone" if present.
+            $this->parseLiteralTypeHint(self::HINT_TIMEZONE);
+
+            $timezone = $this->parseTimezoneLiteral()->value();
+        }
+
+        try {
+            $date = new \DateTimeImmutable($token->value(), $timezone);
+        } catch (\Exception $e) {
+            throw new SyntaxError(
+                sprintf("Invalid date literal '%s'.", $token->value()),
+                $this->expression,
+                $token->position(),
+                $e
+            );
+        }
+
+        return new Ast\DateNode($date);
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
+    private function parseTimezoneLiteral() : Ast\TimezoneNode
+    {
+        $this->match(Token::STRING);
+
+        $token = $this->token();
+
+        try {
+            $timezone = new \DateTimeZone($token->value());
+        } catch (\Exception $e) {
+            throw new SyntaxError(
+                sprintf("Invalid timezone literal '%s'.", $token->value()),
+                $this->expression,
+                $token->position(),
+                $e
+            );
+        }
+
+        $this->next();
+
+        return new Ast\TimezoneNode($timezone);
     }
 
 
@@ -342,5 +451,25 @@ class DefaultParser implements Parser
     private function matchLiteral() : void
     {
         $this->match(...Token::LITERALS);
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
+    private function matchLiteralTypeHint(string ...$hints) : void
+    {
+        $this->match(Token::IDENTIFIER);
+
+        if (empty($hints)) {
+            $hints = self::HINTS;
+        }
+
+        $token = $this->token();
+        $hint  = $token->value();
+
+        if (!in_array($hint, $hints, true)) {
+            throw SyntaxError::unexpectedToken($this->expression, $hints, $token);
+        }
     }
 }

@@ -72,6 +72,7 @@ class Lexer
             case ']': $this->push(Token::RIGHT_BRACKET); break;
             case '.': $this->push(Token::DOT);           break;
             case ',': $this->push(Token::COMMA);         break;
+            case ':': $this->push(Token::COLON);         break;
 
             case '<': $this->push($this->match('=') ? Token::LESS_EQUALS    : Token::LESS);    break;
             case '>': $this->push($this->match('=') ? Token::GREATER_EQUALS : Token::GREATER); break;

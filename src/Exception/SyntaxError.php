@@ -12,7 +12,7 @@ class SyntaxError extends \Exception
     private $expressionColumn;
 
 
-    public function __construct(string $message, string $expression, int $position)
+    public function __construct(string $message, string $expression, int $position, \Throwable $cause = null)
     {
         $preceding = mb_substr($expression, 0, $position);
 
@@ -39,7 +39,7 @@ class SyntaxError extends \Exception
             $message .= "\n\n\t$line | $context\n\t" . str_repeat(' ', $column + strlen($line) + 2) . '^-- here';
         }
 
-        parent::__construct($message);
+        parent::__construct($message, 0, $cause);
     }
 
 

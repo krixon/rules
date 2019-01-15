@@ -2,20 +2,17 @@
 
 namespace Krixon\Rules\Ast;
 
-class NumberNode implements LiteralNode
+/**
+ * @method float value()
+ */
+final class NumberNode implements LiteralNode
 {
-    private $value;
+    use ExposesValue;
 
 
     public function __construct(float $value)
     {
         $this->value = $value;
-    }
-
-
-    public function value()
-    {
-        return $this->value;
     }
 
 

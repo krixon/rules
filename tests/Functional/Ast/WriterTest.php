@@ -45,6 +45,15 @@ class WriterTest extends TestCase
             ['foo not matches "bar"'],
             ['foo in ["bar", "baz"]'],
             [
+                'foo is date:"2000-01-01 12:30:45"',
+                'foo is date:"2000-01-01T12:30:45+00:00"',
+            ],
+            [
+                'foo is date:"2000-01-01 12:30:45" in "Asia/Tokyo"',
+                'foo is date:"2000-01-01T12:30:45+09:00" in "Asia/Tokyo"',
+            ],
+            ['foo is timezone:"Asia/Tokyo"'],
+            [
                 'foo is 42 and bar is 666',
                 '(foo is 42 and bar is 666)',
             ],
