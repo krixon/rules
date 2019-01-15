@@ -97,6 +97,25 @@ class Writer implements Visitor
     }
 
 
+    public function visitDate(DateNode $node) : void
+    {
+        $date     = $node->value();
+        $timezone = $date->getTimezone()->getName();
+
+        $this->buffer .= 'date:"' . $date->format(\DATE_ATOM) . '"';
+
+        if ($timezone !== date_default_timezone_get()) {
+            $this->buffer .= ' in "' . $timezone . '"';
+        }
+    }
+
+
+    public function visitTimezone(TimezoneNode $node) : void
+    {
+        $this->buffer .= 'timezone:"' . $node->value()->getName() . '"';
+    }
+
+
     public function visitNumber(NumberNode $node) : void
     {
         $this->buffer .= $node->value();

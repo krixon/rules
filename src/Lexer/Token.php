@@ -9,6 +9,7 @@ class Token
     public const LEFT_BRACKET   = 'LEFT_BRACKET';
     public const RIGHT_BRACKET  = 'RIGHT_BRACKET';
     public const COMMA          = 'COMMA';
+    public const COLON          = 'COLON';
     public const DOT            = 'DOT';
     public const STRING         = 'STRING';
     public const NUMBER         = 'NUMBER';

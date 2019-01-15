@@ -16,6 +16,10 @@ interface Visitor
 
     public function visitString(StringNode $node) : void;
 
+    public function visitDate(DateNode $node) : void;
+
+    public function visitTimezone(TimezoneNode $node) : void;
+
     public function visitNumber(NumberNode $node) : void;
 
     public function visitBoolean(BooleanNode $node);

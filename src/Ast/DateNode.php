@@ -3,14 +3,13 @@
 namespace Krixon\Rules\Ast;
 
 /**
- * @method string value()
+ * @method \DateTimeImmutable value()
  */
-final class StringNode implements LiteralNode
+final class DateNode implements LiteralNode
 {
     use ExposesValue;
 
-
-    public function __construct(string $value)
+    public function __construct(\DateTimeImmutable $value)
     {
         $this->value = $value;
     }
@@ -18,6 +17,6 @@ final class StringNode implements LiteralNode
 
     public function accept(Visitor $visitor) : void
     {
-        $visitor->visitString($this);
+        $visitor->visitDate($this);
     }
 }

@@ -3,14 +3,14 @@
 namespace Krixon\Rules\Ast;
 
 /**
- * @method bool value()
+ * @method \DateTimeZone value()
  */
-final class BooleanNode implements LiteralNode
+final class TimezoneNode implements LiteralNode
 {
     use ExposesValue;
 
 
-    public function __construct(bool $value)
+    public function __construct(\DateTimeZone $value)
     {
         $this->value = $value;
     }
@@ -18,6 +18,6 @@ final class BooleanNode implements LiteralNode
 
     public function accept(Visitor $visitor) : void
     {
-        $visitor->visitBoolean($this);
+        $visitor->visitTimezone($this);
     }
 }

@@ -125,6 +125,17 @@ class LexerTest extends TestCase
                     new Token(Token::EOF, null, 12),
                 ],
             ],
+            [
+                'foo is date:"2019-01-01T12:02:15Z"',
+                [
+                    new Token(Token::IDENTIFIER, 'foo', 0),
+                    new Token(Token::EQUALS, 'is', 4),
+                    new Token(Token::IDENTIFIER, 'date', 7),
+                    new Token(Token::COLON, ':', 11),
+                    new Token(Token::STRING, '2019-01-01T12:02:15Z', 12),
+                    new Token(Token::EOF, null, 34),
+                ],
+            ],
         ];
     }
 
