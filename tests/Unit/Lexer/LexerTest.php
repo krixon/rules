@@ -1,6 +1,6 @@
 <?php
 
-namespace Krixon\Rules\Tests\Unit;
+namespace Krixon\Rules\Tests\Unit\Lexer;
 
 use Krixon\Rules\Exception\SyntaxError;
 use Krixon\Rules\Lexer\Lexer;
@@ -37,7 +37,7 @@ class LexerTest extends TestCase
                 'foo is "bar"',
                 [
                     new Token(Token::IDENTIFIER, 'foo', 0),
-                    new Token(Token::EQUAL, 'is', 4),
+                    new Token(Token::EQUALS, 'is', 4),
                     new Token(Token::STRING, 'bar', 7),
                     new Token(Token::EOF, null, 12),
                 ],
@@ -46,7 +46,7 @@ class LexerTest extends TestCase
                 'foo == "bar"',
                 [
                     new Token(Token::IDENTIFIER, 'foo', 0),
-                    new Token(Token::EQUAL, '==', 4),
+                    new Token(Token::EQUALS, '==', 4),
                     new Token(Token::STRING, 'bar', 7),
                     new Token(Token::EOF, null, 12),
                 ],
@@ -55,7 +55,7 @@ class LexerTest extends TestCase
                 'foo not "bar"',
                 [
                     new Token(Token::IDENTIFIER, 'foo', 0),
-                    new Token(Token::NOT_EQUAL, 'not', 4),
+                    new Token(Token::NOT, 'not', 4),
                     new Token(Token::STRING, 'bar', 8),
                     new Token(Token::EOF, null, 13),
                 ],
@@ -64,7 +64,7 @@ class LexerTest extends TestCase
                 'foo != "bar"',
                 [
                     new Token(Token::IDENTIFIER, 'foo', 0),
-                    new Token(Token::NOT_EQUAL, '!=', 4),
+                    new Token(Token::NOT, '!=', 4),
                     new Token(Token::STRING, 'bar', 7),
                     new Token(Token::EOF, null, 12),
                 ],
@@ -73,11 +73,11 @@ class LexerTest extends TestCase
                 'foo is 1 or foo is 2',
                 [
                     new Token(Token::IDENTIFIER, 'foo', 0),
-                    new Token(Token::EQUAL, 'is', 4),
+                    new Token(Token::EQUALS, 'is', 4),
                     new Token(Token::NUMBER, 1, 7),
                     new Token(Token:: OR, 'or', 9),
                     new Token(Token::IDENTIFIER, 'foo', 12),
-                    new Token(Token::EQUAL, 'is', 16),
+                    new Token(Token::EQUALS, 'is', 16),
                     new Token(Token::NUMBER, 2, 19),
                     new Token(Token::EOF, null, 20),
                 ],
@@ -86,7 +86,7 @@ class LexerTest extends TestCase
                 'foo is 1 and (bar > 100 or bar in [42, 43])',
                 [
                     new Token(Token::IDENTIFIER, 'foo', 0),
-                    new Token(Token::EQUAL, 'is', 4),
+                    new Token(Token::EQUALS, 'is', 4),
                     new Token(Token::NUMBER, 1, 7),
                     new Token(Token:: AND, 'and', 9),
                     new Token(Token::LEFT_PAREN, '(', 13),
@@ -111,7 +111,7 @@ class LexerTest extends TestCase
                     new Token(Token::IDENTIFIER, 'foo', 0),
                     new Token(Token::DOT, '.', 3),
                     new Token(Token::IDENTIFIER, 'bar', 4),
-                    new Token(Token::EQUAL, 'is', 8),
+                    new Token(Token::EQUALS, 'is', 8),
                     new Token(Token::NUMBER, 42, 11),
                     new Token(Token::EOF, null, 13),
                 ],
@@ -120,7 +120,7 @@ class LexerTest extends TestCase
                 'Ģħİ is "ŤŮŴ"',
                 [
                     new Token(Token::IDENTIFIER, 'Ģħİ', 0),
-                    new Token(Token::EQUAL, 'is', 4),
+                    new Token(Token::EQUALS, 'is', 4),
                     new Token(Token::STRING, 'ŤŮŴ', 7),
                     new Token(Token::EOF, null, 12),
                 ],

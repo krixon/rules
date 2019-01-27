@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 
 class NotTest extends TestCase
 {
-    use DependsOnChildren;
+    use TestsSpecificationsWithChildren;
 
 
     public function testConstructable()

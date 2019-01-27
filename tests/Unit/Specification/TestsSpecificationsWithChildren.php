@@ -4,7 +4,7 @@ namespace Krixon\Rules\Tests\Unit\Specification;
 
 use Krixon\Rules\Specification\Specification;
 
-trait DependsOnChildren
+trait TestsSpecificationsWithChildren
 {
     /**
      * @dataProvider dataProvider

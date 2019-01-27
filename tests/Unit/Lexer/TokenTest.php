@@ -1,6 +1,6 @@
 <?php
 
-namespace Krixon\Rules\Tests\Unit;
+namespace Krixon\Rules\Tests\Unit\Lexer;
 
 use Krixon\Rules\Lexer\Token;
 use PHPUnit\Framework\TestCase;

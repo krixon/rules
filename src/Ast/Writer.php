@@ -5,11 +5,13 @@ namespace Krixon\Rules\Ast;
 class Writer implements Visitor
 {
     private $buffer;
+    private $negating;
 
 
     public function write(Node $node) : string
     {
-        $this->buffer = '';
+        $this->buffer   = '';
+        $this->negating = false;
 
         $node->accept($this);
 
@@ -23,7 +25,7 @@ class Writer implements Visitor
     }
 
 
-    public function visitNodeList(NodeList $node) : void
+    public function visitLiteralNodeList(LiteralNodeList $node) : void
     {
         $this->buffer .= '[';
 
@@ -52,17 +54,40 @@ class Writer implements Visitor
 
     public function visitComparison(ComparisonNode $node) : void
     {
-        $node->left()->accept($this);
+        $node->identifier()->accept($this);
 
-        if ($node->isEqual()) {
-            $this->buffer .= ' is ';
-        } elseif ($node->isNotEqual()) {
-            $this->buffer .= ' not ';
-        } else {
-            $this->buffer .= ' in ';
+        $negated = $this->negating;
+
+        if ($this->negating) {
+            $this->buffer  .= ' not';
+            $this->negating = false;
         }
 
-        $node->right()->accept($this);
+        if ($node->isEquals()) {
+            $this->buffer .= $negated ? ' ' : ' is ';
+        } elseif ($node->isMatches()) {
+            $this->buffer .= ' matches ';
+        } elseif ($node->isIn()) {
+            $this->buffer .= ' in ';
+        } elseif ($node->isGreaterThan()) {
+            $this->buffer .= ' > ';
+        } elseif ($node->isGreaterThanOrEqualTo()) {
+            $this->buffer .= ' >= ';
+        } elseif ($node->isLessThan()) {
+            $this->buffer .= ' < ';
+        } elseif ($node->isLessThanOrEqualTo()) {
+            $this->buffer .= ' <= ';
+        }
+
+        $node->value()->accept($this);
+    }
+
+
+    public function visitNegation(NegationNode $node) : void
+    {
+        $this->negating = true;
+
+        $node->negated()->accept($this);
     }
 
 

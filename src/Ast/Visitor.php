@@ -6,11 +6,13 @@ interface Visitor
 {
     public function visitIdentifier(IdentifierNode $node) : void;
 
-    public function visitNodeList(NodeList $node) : void;
+    public function visitLiteralNodeList(LiteralNodeList $node) : void;
 
     public function visitLogical(LogicalNode $node) : void;
 
     public function visitComparison(ComparisonNode $node) : void;
+
+    public function visitNegation(NegationNode $node) : void;
 
     public function visitString(StringNode $node) : void;
 

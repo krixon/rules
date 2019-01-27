@@ -14,6 +14,7 @@ class DefaultParser implements Parser
      */
     private $tokens;
     private $pointer;
+    private $pointerMax;
     private $lexer;
     private $expression;
 
@@ -27,8 +28,9 @@ class DefaultParser implements Parser
     public function parse(string $expression) : Ast\Node
     {
         $this->expression = $expression;
-        $this->pointer    = 0;
         $this->tokens     = $this->lexer->tokenize($this->expression);
+        $this->pointer    = 0;
+        $this->pointerMax = count($this->tokens) - 1;
 
         // Check for an empty expression explicitly.
         // This is not technically necessary, but allows for a more helpful error message over the more
@@ -57,7 +59,7 @@ class DefaultParser implements Parser
         // the future with varying levels of precedence.
         $operatorPrecedence = 1;
 
-        while ($this->token()->isOperator() && $operatorPrecedence > $precedence) {
+        while ($this->is(...Token::OPERATORS) && $operatorPrecedence > $precedence) {
             $left = $this->parseLogicalExpression($left);
         }
 
@@ -104,23 +106,83 @@ class DefaultParser implements Parser
      */
     private function parseComparisonExpression() : Ast\Node
     {
-        $left = $this->parseIdentifier();
+        $left    = $this->parseIdentifier();
+        $negated = false;
 
-        $this->matchComparisonOperator();
+        // NOT negates the following comparison operator.
+
+        if ($this->is(Token::NOT)) {
+            $next = $this->peek();
+
+            // Consume the NOT.
+            $this->next();
+
+            if ($next && $next->isLiteral()) {
+                // NOT was found immediately before a literal rather than a comparison operator (e.g. foo not "bar").
+                // This is considered shorthand for NOT EQUALS.
+                return new Ast\NegationNode(Ast\ComparisonNode::equals($left, $this->parseLiteral()));
+            }
+
+            // This is regular negation of the subsequent comparison operator.
+            $negated = true;
+        }
 
         $token = $this->token();
 
+        $this->matchComparisonOperator();
         $this->next();
 
-        if ($token->is(Token::EQUAL)) {
-            return Ast\ComparisonNode::equal($left, $this->parseLiteral());
+        switch ($token->type()) {
+            case TOKEN::EQUALS:
+                $node = Ast\ComparisonNode::equals($left, $this->parseLiteral());
+                break;
+            case TOKEN::GREATER:
+                $node = Ast\ComparisonNode::greaterThan($left, $this->parseLiteral());
+                break;
+            case TOKEN::GREATER_EQUALS:
+                $node = Ast\ComparisonNode::greaterThanOrEqualTo($left, $this->parseLiteral());
+                break;
+            case TOKEN::LESS:
+                $node = Ast\ComparisonNode::lessThan($left, $this->parseLiteral());
+                break;
+            case TOKEN::LESS_EQUALS:
+                $node = Ast\ComparisonNode::lessThanOrEqualTo($left, $this->parseLiteral());
+                break;
+            case TOKEN::IN:
+                $node = Ast\ComparisonNode::in($left, $this->parseLiteralList());
+                break;
+            case TOKEN::MATCHES:
+                $node = $this->parseMatchesComparison($left);
+                break;
+            default:
+                // @codeCoverageIgnoreStart
+                // This has already been validated by matchComparisonOperator(), but is thrown here to
+                // help prevent future bugs if a new token type is implemented without a corresponding branch
+                // in this case statement.
+                throw SyntaxError::unexpectedToken($this->expression, 'COMPARISON_OPERATOR', $token);
+                // @codeCoverageIgnoreEnd
         }
 
-        if ($token->is(Token::NOT_EQUAL)) {
-            return Ast\ComparisonNode::notEqual($left, $this->parseLiteral());
+        if ($negated) {
+            $node = new Ast\NegationNode($node);
         }
 
-        return Ast\ComparisonNode::in($left, $this->parseLiteralList());
+        return $node;
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
+    private function parseMatchesComparison(Ast\IdentifierNode $identifier) : Ast\Node
+    {
+        $this->match(Token::STRING);
+
+        $value = $this->token()->value();
+
+        $this->next();
+
+        return Ast\ComparisonNode::matches($identifier, new Ast\StringNode($value));
     }
 
 
@@ -135,7 +197,7 @@ class DefaultParser implements Parser
 
         $this->next();
 
-        if (!$this->token()->is(Token::DOT)) {
+        if (!$this->is(Token::DOT)) {
             return new Ast\IdentifierNode($token->value());
         }
 
@@ -148,13 +210,13 @@ class DefaultParser implements Parser
     /**
      * @throws SyntaxError
      */
-    private function parseLiteral() : Ast\Node
+    private function parseLiteral() : Ast\LiteralNode
     {
         $this->matchLiteral();
 
         $token = $this->token();
 
-        $this->pointer++;
+        $this->next();
 
         if ($token->is(Token::STRING)) {
             return new Ast\StringNode($token->value());
@@ -171,7 +233,7 @@ class DefaultParser implements Parser
     /**
      * @throws SyntaxError
      */
-    private function parseLiteralList() : Ast\NodeList
+    private function parseLiteralList() : Ast\LiteralNodeList
     {
         $this->match(Token::LEFT_BRACKET);
 
@@ -185,7 +247,7 @@ class DefaultParser implements Parser
             // a lot of sense in the context of a rule.
             $literals[] = $this->parseLiteral();
 
-            if (!$this->token()->is(Token::COMMA)) {
+            if (!$this->is(Token::COMMA)) {
                 break;
             }
 
@@ -196,7 +258,7 @@ class DefaultParser implements Parser
 
         $this->next();
 
-        return new Ast\NodeList(...$literals);
+        return new Ast\LiteralNodeList(...$literals);
     }
 
 
@@ -219,9 +281,15 @@ class DefaultParser implements Parser
     }
 
 
-    private function token() : Token
+    private function token() : ?Token
     {
-        return $this->tokens[$this->pointer];
+        return $this->pointer > $this->pointerMax ? null : $this->tokens[$this->pointer];
+    }
+
+
+    private function peek() : ?Token
+    {
+        return $this->tokens[$this->pointer + 1] ?? null;
     }
 
 
@@ -231,12 +299,20 @@ class DefaultParser implements Parser
     }
 
 
+    private function is(string ...$tokenType) : bool
+    {
+        $token = $this->token();
+
+        return $token && $token->is(...$tokenType);
+    }
+
+
     /**
      * @throws SyntaxError
      */
-    private function match(string $tokenType) : void
+    private function match(string ...$tokenType) : void
     {
-        if (!$this->token()->is($tokenType)) {
+        if (!$this->is(...$tokenType)) {
             throw SyntaxError::unexpectedToken($this->expression, $tokenType, $this->token());
         }
     }
@@ -247,9 +323,7 @@ class DefaultParser implements Parser
      */
     private function matchComparisonOperator() : void
     {
-        if (!$this->token()->isComparisonOperator()) {
-            throw SyntaxError::unexpectedToken($this->expression, 'COMPARISON_OPERATOR', $this->token());
-        }
+        $this->match(...Token::COMPARISON_OPERATORS);
     }
 
 
@@ -258,9 +332,7 @@ class DefaultParser implements Parser
      */
     private function matchLogicalOperator() : void
     {
-        if (!$this->token()->isLogicalOperator()) {
-            throw SyntaxError::unexpectedToken($this->expression, 'LOGICAL_OPERATOR', $this->token());
-        }
+        $this->match(...Token::LOGICAL_OPERATORS);
     }
 
 
@@ -269,8 +341,6 @@ class DefaultParser implements Parser
      */
     private function matchLiteral() : void
     {
-        if (!$this->token()->isLiteral()) {
-            throw SyntaxError::unexpectedToken($this->expression, 'LITERAL', $this->token());
-        }
+        $this->match(...Token::LITERALS);
     }
 }
