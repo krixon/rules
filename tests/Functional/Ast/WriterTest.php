@@ -56,6 +56,7 @@ class WriterTest extends TestCase
                 'foo is 42 and (bar is 666 or bar is 667)',
                 '(foo is 42 and (bar is 666 or bar is 667))',
             ],
+            ['(foo is 10 xor bar is 10)']
         ];
     }
 }

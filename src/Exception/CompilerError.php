@@ -16,6 +16,15 @@ final class CompilerError extends \Exception
     }
 
 
+    public static function unknownComparisonType() : self
+    {
+        // @codeCoverageIgnoreStart
+        // It is not expected that this is ever thrown in a bug-free implementation.
+        return new CompilerError('Unknown comparison type.');
+        // @codeCoverageIgnoreEnd
+    }
+
+
     public static function unsupportedComparisonType(string $type, string $identifier) : self
     {
         return new CompilerError(sprintf(

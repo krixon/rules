@@ -93,11 +93,21 @@ class DefaultParser implements Parser
 
         $this->next();
 
-        if ($token->is(Token::AND)) {
-            return Ast\LogicalNode::and($left, $this->parseExpression(1));
+        switch ($token->type()) {
+            case Token::AND:
+                return Ast\LogicalNode::and($left, $this->parseExpression(1));
+            case Token::OR:
+                return Ast\LogicalNode::or($left, $this->parseExpression(1));
+            case Token::XOR:
+                return Ast\LogicalNode::xor($left, $this->parseExpression(1));
+            default:
+                // @codeCoverageIgnoreStart
+                // This has already been validated by matchLogicalOperator(), but is thrown here to
+                // help prevent future bugs if a new token type is implemented without a corresponding branch
+                // in this case statement.
+                throw SyntaxError::unexpectedToken($this->expression, 'LOGICAL_OPERATOR', $token);
+                // @codeCoverageIgnoreEnd
         }
-
-        return Ast\LogicalNode::or($left, $this->parseExpression(1));
     }
 
 

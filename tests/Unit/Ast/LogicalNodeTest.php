@@ -19,6 +19,11 @@ class LogicalNodeTest extends TestCase
      */
     private $or;
 
+    /**
+     * @var LogicalNode
+     */
+    private $xor;
+
 
     protected function setUp()
     {
@@ -28,6 +33,7 @@ class LogicalNodeTest extends TestCase
         $right     = $this->createMock(Node::class);
         $this->and = LogicalNode::and($left, $right);
         $this->or  = LogicalNode::or($left, $right);
+        $this->xor = LogicalNode::xor($left, $right);
     }
 
 
@@ -35,6 +41,7 @@ class LogicalNodeTest extends TestCase
     {
         static::assertTrue($this->and->isAnd());
         static::assertFalse($this->or->isAnd());
+        static::assertFalse($this->xor->isAnd());
     }
 
 
@@ -42,5 +49,14 @@ class LogicalNodeTest extends TestCase
     {
         static::assertTrue($this->or->isOr());
         static::assertFalse($this->and->isOr());
+        static::assertFalse($this->xor->isOr());
+    }
+
+
+    public function testCanDetermineIfLogicalTypeIsXor()
+    {
+        static::assertTrue($this->xor->isXor());
+        static::assertFalse($this->and->isXor());
+        static::assertFalse($this->or->isXor());
     }
 }

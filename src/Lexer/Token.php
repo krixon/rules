@@ -24,6 +24,7 @@ class Token
     public const MATCHES        = 'MATCHES';
     public const AND            = 'AND';
     public const OR             = 'OR';
+    public const XOR            = 'XOR';
     public const EOF            = 'EOF';
 
     public const COMPARISON_OPERATORS = [
@@ -41,6 +42,7 @@ class Token
     public const LOGICAL_OPERATORS = [
         self::AND,
         self::OR,
+        self::XOR,
     ];
 
     public const OPERATORS = [
@@ -53,6 +55,7 @@ class Token
         self::MATCHES,
         self::AND,
         self::OR,
+        self::XOR,
     ];
 
     public const LITERALS = [

@@ -4,15 +4,16 @@ namespace Krixon\Rules\Ast;
 
 class LogicalNode implements Node
 {
-    private const AND = 0;
-    private const OR  = 1;
+    private const AND = 'AND';
+    private const OR  = 'OR';
+    private const XOR = 'XOR';
 
     private $left;
     private $right;
     private $type;
 
 
-    private function __construct(int $type, Node $left, Node $right)
+    private function __construct(string $type, Node $left, Node $right)
     {
         $this->left  = $left;
         $this->right = $right;
@@ -43,6 +44,11 @@ class LogicalNode implements Node
         return new static(self::OR, $left, $right);
     }
 
+    public static function xor(Node $left, Node $right) : self
+    {
+        return new static(self::XOR, $left, $right);
+    }
+
 
     public function accept(Visitor $visitor) : void
     {
@@ -59,5 +65,11 @@ class LogicalNode implements Node
     public function isOr() : bool
     {
         return $this->type === self::OR;
+    }
+
+
+    public function isXor() : bool
+    {
+        return $this->type === self::XOR;
     }
 }
