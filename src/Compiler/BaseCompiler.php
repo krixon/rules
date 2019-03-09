@@ -39,17 +39,30 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
         // Are any of these args a LogicalNode of the same type? If so we can flatten the specification.
         // For example, given ((a or b) or c), convert to (a or b or c).
         foreach ([$this->specifications->pop(), $this->specifications->pop()] as $arg) {
-            if ($arg instanceof Spec\Composite && $node->isAnd() === $arg->isAnd()) {
+            if ($arg instanceof Spec\Composite && $this->isLogicallyCompatible($node, $arg)) {
                 $args = array_merge($args, $arg->children());
             } else {
                 $args[] = $arg;
             }
         }
 
-        if ($node->isAnd()) {
-            $this->specifications->push(Spec\Composite::and(...$args));
-        } else {
-            $this->specifications->push(Spec\Composite::or(...$args));
+        switch (true) {
+            case $node->isAnd():
+                $this->specifications->push(Spec\Composite::and(...$args));
+                break;
+            case $node->isOr():
+                $this->specifications->push(Spec\Composite::or(...$args));
+                break;
+            case $node->isXor():
+                $this->specifications->push(Spec\Composite::xor(...$args));
+                break;
+            default:
+                // @codeCoverageIgnoreStart
+                // This should not be possible to reach in a bug-free implementation, but is thrown here to
+                // help prevent future bugs if a new composite type is implemented without a corresponding branch
+                // in this case statement.
+                throw CompilerError::unknownComparisonType();
+                // @codeCoverageIgnoreEnd
         }
     }
 
@@ -78,4 +91,28 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
      * @throws CompilerError If a Specification cannot be generated.
      */
     abstract protected function generate(Ast\ComparisonNode $comparison) : Spec\Specification;
+
+
+    /**
+     * @throws CompilerError
+     */
+    private function isLogicallyCompatible(Ast\LogicalNode $node, Spec\Composite $specification) : bool
+    {
+        if ($node->isAnd()) {
+            return $specification->isAnd();
+        }
+
+        if ($node->isOr()) {
+            return $specification->isOr();
+        }
+
+        if ($node->isXor()) {
+            return $specification->isXor();
+        }
+
+        // @codeCoverageIgnoreStart
+        // It is impossible to reach this point in a bug-free implementation.
+        throw CompilerError::unknownComparisonType();
+        // @codeCoverageIgnoreEnd
+    }
 }

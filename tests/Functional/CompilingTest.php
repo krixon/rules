@@ -207,6 +207,21 @@ class CompilingTest extends TestCase implements SpecificationGenerator
                 )
             ],
             [
+                'foo is 10 xor bar is 10',
+                Composite::xor(
+                    $this->stub('foo', $eq, 10),
+                    $this->stub('bar', $eq, 10)
+                )
+            ],
+            [
+                'foo is 10 xor bar is 10 xor baz is 10',
+                Composite::xor(
+                    $this->stub('foo', $eq, 10),
+                    $this->stub('bar', $eq, 10),
+                    $this->stub('baz', $eq, 10)
+                )
+            ],
+            [
                 'foo.bar is "bar"',
                 $this->stub('foo.bar', $eq, 'bar')
             ],

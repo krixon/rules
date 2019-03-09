@@ -11,6 +11,7 @@ class Lexer
         'not'     => Token::NOT,
         'and'     => Token::AND,
         'or'      => Token::OR,
+        'xor'     => Token::XOR,
         'in'      => Token::IN,
         'true'    => Token::BOOLEAN,
         'false'   => Token::BOOLEAN,

@@ -44,6 +44,17 @@ class CompositeTest extends TestCase
             [Composite::and($this->false(), $this->false()), false],
             [Composite::and($this->true(), $this->true(), $this->false()), false],
             [Composite::and($this->true(), $this->true(), $this->true()), true],
+
+            [Composite::xor($this->true()), true],
+            [Composite::xor($this->false()), false],
+            [Composite::xor($this->true(), $this->false()), true],
+            [Composite::xor($this->false(), $this->true()), true],
+            [Composite::xor($this->false(), $this->false()), false],
+            [Composite::xor($this->true(), $this->true()), false],
+            [Composite::xor($this->false(), $this->false(), $this->false()), false],
+            [Composite::xor($this->true(), $this->false(), $this->false()), true],
+            [Composite::xor($this->true(), $this->true(), $this->false()), false],
+            [Composite::xor($this->true(), $this->true(), $this->true()), false],
         ];
     }
 }

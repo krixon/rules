@@ -44,7 +44,17 @@ class Writer implements Visitor
 
         $node->left()->accept($this);
 
-        $this->buffer .= $node->isAnd() ? ' and ' : ' or ';
+        switch (true) {
+            case $node->isAnd():
+                $this->buffer .= ' and ';
+                break;
+            case $node->isOr():
+                $this->buffer .= ' or ';
+                break;
+            case $node->isXor():
+                $this->buffer .= ' xor ';
+                break;
+        }
 
         $node->right()->accept($this);
 

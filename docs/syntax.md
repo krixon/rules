@@ -48,15 +48,50 @@ Determines if an identifier matches a regular expression.
 
 The language supports the following logical operators.
 
-In future, `xor` (exclusive or) will also be supported. See [issue #7](https://github.com/krixon/rules/issues/7).
-
 ### `and`
 
 Combines two comparisons such that both must be true for the rule to pass.
 
+`foo is 10 and bar is 10`
+
+#### Truth Table
+
+| A | B | Q |
+|---|---|---|
+| 0 | 0 | 0 |
+| 0 | 1 | 0 |
+| 1 | 0 | 0 |
+| 1 | 1 | 1 |
+
 ### `or`
 
 Combines two comparisons such that either or both must be true for the rule to pass.
+
+`foo is 10 or bar is 10`
+
+#### Truth Table
+
+| A | B | Q |
+|---|---|---|
+| 0 | 0 | 0 |
+| 0 | 1 | 1 |
+| 1 | 0 | 1 |
+| 1 | 1 | 1 |
+
+### `xor`
+
+Combines two comparisons such that one or the other must be true for the rule to pass, but not neither or both.
+
+`foo is 10 xor bar is 10`
+
+#### Truth Table
+
+| A | B | Q |
+|---|---|---|
+| 0 | 0 | 0 |
+| 0 | 1 | 1 |
+| 1 | 0 | 1 |
+| 1 | 1 | 0 |
 
 ## Groups
 
@@ -68,10 +103,10 @@ together. Consider the following example:
 This rule could be interpreted in a couple of ways:
 
 - The respondent is a 30 year old with any name, or is a 40 year old named Arnold.
-- The respondent is either 30 or 40 years, but regardless must be named Arnold.
+- The respondent is either 30 or 40 years old, but regardless must be named Arnold.
 
 Logical operators are left associative, so the rule will be interpreted as option 2; the respondent is either 30 or
-40 years, but regardless must be named Arnold. To resolve this ambiguity, sets of comparisons can be grouped with
+40 years old, but regardless must be named Arnold. To resolve this ambiguity, sets of comparisons can be grouped with
 parentheses. If option 1 was intended, the rule can be rewritten like this:
 
 `age is 30 or (age is 40 and name is "Arnold")`
@@ -82,3 +117,68 @@ clarity.
 Groups can be nested within each other to form complex rules with specific semantics:
 
 `age is 30 or (age is 40 and (name is "Arnold" or name is "Dave" or name is "Kryten"))`
+
+## Literal Values
+
+Literal values are used to compare against identifiers. The language supports a few types of literal value.
+
+### Strings
+
+Strings are enclosed within double quotes (`"`). They can contain any UTF-8 encoded character.
+
+```
+name is "Arnold"
+```
+
+If you need to include a double quote character within the string, it must be escaped with a backslash (`\`):
+
+```
+name is "Dave \"Bum\" Lister"
+```
+
+### Numbers
+
+Numbers are always treated as `float`s.
+
+```
+foo > 1 and foo not 3.14
+```
+
+### Booleans
+
+Booleans are supported using `true` and `false`. No other literal type is interpreted as a boolean, so `foo is 1` will
+not pass if foo is boolean `true` for example.
+
+```
+foo is true and bar is false
+```
+
+## Comments
+
+Comments can be used within rules. Two types of comment are supported, line comments and block comments.
+
+### Line Comments
+
+Line comments are prefixed with `//` can appear on their own line or at the end of a line. Anything after the `//`
+is treated as the comment.
+
+```
+// this is a comment on its own line
+foo is 10    // this is a comment at the end of a line
+or bar is 10 // this is another comment at the end of a line
+```
+
+### Block Comments
+
+Block comments start with `/*` and end with `*/`. Because they have a specific start and end, they can appear
+within lines.
+
+```
+/* this is a comment on its own line */
+foo is 10
+/*
+Block comments can span multiple lines
+for longer chunks of comment.
+*/
+or bar /* and appear within a line */ is 10
+```
