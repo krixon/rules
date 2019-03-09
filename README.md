@@ -34,6 +34,10 @@ $ git clone https://github.com/krixon/rules.git
 $ git clone git@github.com:krixon/rules.git
 ```
 
+# Supported Syntax
+
+Refer to the [syntax documentation](./docs/syntax.md) for detailed information on the rule syntax.
+
 # Usage
 
 The main task involved in using this library is implementing `BaseCompiler::generate()`. This method has the following
