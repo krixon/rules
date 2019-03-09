@@ -40,9 +40,32 @@ class Writer implements Visitor
 
     public function visitLogical(LogicalNode $node) : void
     {
+        $left  = $node->left();
+        $right = $node->right();
+
+        // Simplify expressions like `foo >= 10 and foo <= 20` to `foo between 10 and 20`.
+        if ($node->isAnd()
+            && $left instanceof ComparisonNode
+            && $right instanceof ComparisonNode
+            && $left->isGreaterThanOrEqualTo()
+            && $right->isLessThanOrEqualTo()) {
+
+            $left->identifier()->accept($this);
+
+            $this->buffer .= ' between ';
+
+            $left->value()->accept($this);
+
+            $this->buffer .= ' and ';
+
+            $right->value()->accept($this);
+
+            return;
+        }
+
         $this->buffer .= '(';
 
-        $node->left()->accept($this);
+        $left->accept($this);
 
         switch (true) {
             case $node->isAnd():
@@ -56,7 +79,7 @@ class Writer implements Visitor
                 break;
         }
 
-        $node->right()->accept($this);
+        $right->accept($this);
 
         $this->buffer .= ')';
     }

@@ -3,6 +3,7 @@
 namespace Krixon\Rules\Tests\Functional\Ast;
 
 use Krixon\Rules\Ast\Writer;
+use Krixon\Rules\Exception\SyntaxError;
 use Krixon\Rules\Parser\DefaultParser;
 use PHPUnit\Framework\TestCase;
 
@@ -14,7 +15,7 @@ class WriterTest extends TestCase
      * @param string $expression
      * @param string $expected
      *
-     * @throws \Krixon\Rules\Exception\SyntaxError
+     * @throws SyntaxError
      */
     public function testProducesExpectedString(string $expression, string $expected = null) : void
     {
@@ -28,7 +29,7 @@ class WriterTest extends TestCase
     }
 
 
-    public function expectedStringProvider() : array
+    public static function expectedStringProvider() : array
     {
         return [
             ['foo is 42'],
@@ -44,6 +45,7 @@ class WriterTest extends TestCase
             ['foo not > 42'],
             ['foo not matches "bar"'],
             ['foo in ["bar", "baz"]'],
+            ['foo between 10 and 20'],
             [
                 'foo is date:"2000-01-01 12:30:45"',
                 'foo is date:"2000-01-01T12:30:45+00:00"',

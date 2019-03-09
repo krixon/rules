@@ -16,6 +16,7 @@ class Lexer
         'true'    => Token::BOOLEAN,
         'false'   => Token::BOOLEAN,
         'matches' => Token::MATCHES,
+        'between' => Token::BETWEEN,
     ];
 
     private const ESCAPE_SEQUENCES = [

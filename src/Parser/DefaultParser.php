@@ -172,6 +172,9 @@ class DefaultParser implements Parser
             case TOKEN::MATCHES:
                 $node = $this->parseMatchesComparison($left);
                 break;
+            case TOKEN::BETWEEN:
+                $node = $this->parseBetweenComparison($left);
+                break;
             default:
                 // @codeCoverageIgnoreStart
                 // This has already been validated by matchComparisonOperator(), but is thrown here to
@@ -192,7 +195,7 @@ class DefaultParser implements Parser
     /**
      * @throws SyntaxError
      */
-    private function parseMatchesComparison(Ast\IdentifierNode $identifier) : Ast\Node
+    private function parseMatchesComparison(Ast\IdentifierNode $identifier) : Ast\ComparisonNode
     {
         $this->match(Token::STRING);
 
@@ -201,6 +204,27 @@ class DefaultParser implements Parser
         $this->next();
 
         return Ast\ComparisonNode::matches($identifier, new Ast\StringNode($value));
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
+    private function parseBetweenComparison(Ast\IdentifierNode $identifier) : Ast\Node
+    {
+        // `foo between 10 and 20` is syntactic sugar for `foo >= 10 and foo <= 20`.
+
+        $a = $this->parseLiteral();
+
+        $this->match(Token::AND);
+        $this->next();
+
+        $b = $this->parseLiteral();
+
+        return Ast\LogicalNode::and(
+            Ast\ComparisonNode::greaterThanOrEqualTo($identifier, $a),
+            Ast\ComparisonNode::lessThanOrEqualTo($identifier, $b)
+        );
     }
 
 

@@ -2,6 +2,15 @@
 
 namespace Krixon\Rules\Ast;
 
+/**
+ * A simple comparison of an identifier against a single, literal value.
+ *
+ * For example:
+ *
+ * foo is "bar"
+ * foo > 5
+ * foo matches "/^[a-z]+$/i"
+ */
 class ComparisonNode implements Node
 {
     private const EQUALS         = 'EQUALS';
