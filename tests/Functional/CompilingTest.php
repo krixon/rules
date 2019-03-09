@@ -91,6 +91,20 @@ class CompilingTest extends TestCase implements SpecificationGenerator
                 $this->stub('foo', $in, ['a', 2, 3.5])
             ],
             [
+                'foo between 10 and 20',
+                Composite::and(
+                    $this->stub('foo', $gte, 10),
+                    $this->stub('foo', $lte, 20)
+                )
+            ],
+            [
+                'foo between "a" and "z"',
+                Composite::and(
+                    $this->stub('foo', $gte, 'a'),
+                    $this->stub('foo', $lte, 'z')
+                )
+            ],
+            [
                 'foo is "bar" or (deep is 1 and (deeper is 2))',
                 Composite::or(
                     $this->stub('foo', $eq, 'bar'),

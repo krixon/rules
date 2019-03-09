@@ -45,7 +45,7 @@ class DefaultParserTest extends TestCase
                 [
                     new Token(Token::IDENTIFIER, 'foo', 0),
                 ],
-                'EQUALS | GREATER | GREATER_EQUALS | IN | LESS | LESS_EQUALS | MATCHES',
+                'BETWEEN | EQUALS | GREATER | GREATER_EQUALS | IN | LESS | LESS_EQUALS | MATCHES',
                 'EOF',
             ],
             'Missing literal' => [

@@ -4,7 +4,7 @@ namespace Krixon\Rules\Lexer;
 
 class Token
 {
-    public const LEFT_PAREN    = 'LEFT_PAREN';
+    public const LEFT_PAREN     = 'LEFT_PAREN';
     public const RIGHT_PAREN    = 'RIGHT_PAREN';
     public const LEFT_BRACKET   = 'LEFT_BRACKET';
     public const RIGHT_BRACKET  = 'RIGHT_BRACKET';
@@ -22,6 +22,7 @@ class Token
     public const LESS           = 'LESS';
     public const IN             = 'IN';
     public const MATCHES        = 'MATCHES';
+    public const BETWEEN        = 'BETWEEN';
     public const AND            = 'AND';
     public const OR             = 'OR';
     public const EOF            = 'EOF';
@@ -34,6 +35,7 @@ class Token
         self::LESS,
         self::IN,
         self::MATCHES,
+        self::BETWEEN,
     ];
 
     // Technically NOT is a logical operator, but this list only includes binary operators
@@ -51,6 +53,7 @@ class Token
         self::LESS,
         self::IN,
         self::MATCHES,
+        self::BETWEEN,
         self::AND,
         self::OR,
     ];
