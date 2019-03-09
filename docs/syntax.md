@@ -67,8 +67,8 @@ together. Consider the following example:
 
 This rule could be interpreted in a couple of ways:
 
-The respondent is a 30 year old with any name, or is a 40 year old named Arnold.
-The respondent is either 30 or 40 years, but regardless must be named Arnold.
+- The respondent is a 30 year old with any name, or is a 40 year old named Arnold.
+- The respondent is either 30 or 40 years, but regardless must be named Arnold.
 
 Logical operators are left associative, so the rule will be interpreted as option 2; the respondent is either 30 or
 40 years, but regardless must be named Arnold. To resolve this ambiguity, sets of comparisons can be grouped with
