@@ -122,7 +122,7 @@ Groups can be nested within each other to form complex rules with specific seman
 
 Literal values are used to compare against identifiers. The language supports a few types of literal value.
 
-### Strings
+### String
 
 Strings are enclosed within double quotes (`"`). They can contain any UTF-8 encoded character.
 
@@ -136,7 +136,7 @@ If you need to include a double quote character within the string, it must be es
 name is "Dave \"Bum\" Lister"
 ```
 
-### Numbers
+### Number
 
 Numbers are always treated as `float`s.
 
@@ -144,13 +144,45 @@ Numbers are always treated as `float`s.
 foo > 1 and foo not 3.14
 ```
 
-### Booleans
+### Boolean
 
 Booleans are supported using `true` and `false`. No other literal type is interpreted as a boolean, so `foo is 1` will
 not pass if foo is boolean `true` for example.
 
 ```
 foo is true and bar is false
+```
+
+### Date
+
+Dates are strings which have the `date:` type hint.
+
+```
+foo is date:"2019-01-01"
+```
+
+Any valid PHP [date and time format](http://php.net/manual/en/datetime.formats.php) can be used.
+
+```
+foo is date:"2019-01-01 12:30:45"
+foo is date:"now"
+foo is date:"10 days ago"
+// etc
+```
+
+It is also possible to specify a timezone in which the date should be interpreted. If no timezone is specified,
+the default timezone is used.
+
+```
+foo is date:"2019-01-01 12:30:45" in "Europe/London"
+```
+
+### Timezone
+
+Timezones are strings which have the `timezone:` type hint.
+
+```
+foo is timezone:"Europe/London"
 ```
 
 ## Comments
