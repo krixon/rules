@@ -52,6 +52,34 @@ class ParsingTest extends TestCase
                     new Ast\StringNode("b\na\nr")
                 )
             ],
+            'Boolean true' => [
+                'foo is true',
+                Ast\ComparisonNode::equals(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\BooleanNode(true)
+                )
+            ],
+            'Boolean false' => [
+                'foo is false',
+                Ast\ComparisonNode::equals(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\BooleanNode(false)
+                )
+            ],
+            'Boolean true with upper case literal' => [
+                'foo is TRUE',
+                Ast\ComparisonNode::equals(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\BooleanNode(true)
+                )
+            ],
+            'Boolean true with mixed case literal' => [
+                'foo is TrUe',
+                Ast\ComparisonNode::equals(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\BooleanNode(true)
+                )
+            ],
             'Date type hint' => [
                 'foo is date:"2000-01-01 12:30:45"',
                 Ast\ComparisonNode::equals(

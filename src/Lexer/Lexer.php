@@ -2,6 +2,7 @@
 
 namespace Krixon\Rules\Lexer;
 
+use IntlChar;
 use Krixon\Rules\Exception\SyntaxError;
 
 class Lexer
@@ -87,7 +88,7 @@ class Lexer
             default:
                 if (ctype_digit($char)) {
                     $this->number();
-                } elseif (\IntlChar::isalpha($char)) {
+                } elseif (IntlChar::isalpha($char)) {
                     $this->identifier();
                 } else {
                     throw new SyntaxError('Invalid token.', $this->expression, $this->current - 1);
@@ -302,14 +303,15 @@ class Lexer
      */
     private function identifier()
     {
-        while (\IntlChar::isalnum($this->peek())) {
+        while (IntlChar::isalnum($this->peek())) {
             $this->advance();
         }
 
-        $value = $this->lexeme();
+        $value   = $this->lexeme();
+        $keyword = strtolower($value);
 
-        if (array_key_exists($value, self::KEYWORDS)) {
-            $this->push(self::KEYWORDS[$value]);
+        if (array_key_exists($keyword, self::KEYWORDS)) {
+            $this->push(self::KEYWORDS[$keyword], $keyword);
         } else {
             $this->push(Token::IDENTIFIER, $value);
         }
