@@ -90,18 +90,46 @@ class CompilingTest extends TestCase implements SpecificationGenerator
                 'foo in ["a", 2, 3.5]',
                 $this->stub('foo', $in, ['a', 2, 3.5])
             ],
-            [
+            'Between, simple numbers' => [
                 'foo between 10 and 20',
                 Composite::and(
                     $this->stub('foo', $gte, 10),
                     $this->stub('foo', $lte, 20)
                 )
             ],
-            [
+            'Between, simple strings' => [
                 'foo between "a" and "z"',
                 Composite::and(
                     $this->stub('foo', $gte, 'a'),
                     $this->stub('foo', $lte, 'z')
+                )
+            ],
+            'Between, interval notation ()' => [
+                'foo between (10, 20)',
+                Composite::and(
+                    $this->stub('foo', $gt, 10),
+                    $this->stub('foo', $lt, 20)
+                )
+            ],
+            'Between, interval notation []' => [
+                'foo between [10, 20]',
+                Composite::and(
+                    $this->stub('foo', $gte, 10),
+                    $this->stub('foo', $lte, 20)
+                )
+            ],
+            'Between, interval notation (]' => [
+                'foo between (10, 20]',
+                Composite::and(
+                    $this->stub('foo', $gt, 10),
+                    $this->stub('foo', $lte, 20)
+                )
+            ],
+            'Between, interval notation [)' => [
+                'foo between [10, 20)',
+                Composite::and(
+                    $this->stub('foo', $gte, 10),
+                    $this->stub('foo', $lt, 20)
                 )
             ],
             [
