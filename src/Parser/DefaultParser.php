@@ -210,21 +210,74 @@ class DefaultParser implements Parser
     /**
      * @throws SyntaxError
      */
-    private function parseBetweenComparison(Ast\IdentifierNode $identifier) : Ast\Node
+    private function parseBetweenComparison(Ast\IdentifierNode $identifier) : Ast\LogicalNode
     {
-        // `foo between 10 and 20` is syntactic sugar for `foo >= 10 and foo <= 20`.
+        // There are two forms of between comparison.
+        // The first uses interval notation (https://en.wikipedia.org/wiki/Interval_%28mathematics%29) to explicitly
+        // define the boundaries of the interval.
+        // The second is a simplified version (`foo between 10 and 20`) which implies a closed interval.
+        // Both versions are really just syntactic sugar for two separate comparisons joined with AND.
+        // For example, `foo between (10, 20]` is the same as `foo > 10 and foo <= 20`.
+
+        // Simplified version.
+        if ($this->is(...Token::LITERALS)) {
+            $a = $this->parseLiteral();
+
+            $this->match(Token::AND);
+            $this->next();
+
+            $b = $this->parseLiteral();
+
+            return Ast\LogicalNode::and(
+                Ast\ComparisonNode::greaterThanOrEqualTo($identifier, $a),
+                Ast\ComparisonNode::lessThanOrEqualTo($identifier, $b)
+            );
+        }
+
+        // Full interval notation.
+        return $this->parseIntervalNotation($identifier);
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
+    private function parseIntervalNotation(Ast\IdentifierNode $identifier) : Ast\LogicalNode
+    {
+        // (0,1) is open; it does not include its endpoints, so becomes "> 0 && < 1".
+        // [0,1] is closed; it includes its endpoints, so becomes ">= 0 && <= 1".
+        // [0,1) and (0,1] are half-open; they include one endpoint, so become "> 0 && <= 1" or ">= 0 && < 1".
+
+        $this->match(Token::LEFT_BRACKET, Token::LEFT_PAREN);
+
+        $start = $this->token();
+        $this->next();
 
         $a = $this->parseLiteral();
 
-        $this->match(Token::AND);
+        $this->match(Token::COMMA);
         $this->next();
 
         $b = $this->parseLiteral();
 
-        return Ast\LogicalNode::and(
-            Ast\ComparisonNode::greaterThanOrEqualTo($identifier, $a),
-            Ast\ComparisonNode::lessThanOrEqualTo($identifier, $b)
-        );
+        $this->match(Token::RIGHT_BRACKET, Token::RIGHT_PAREN);
+
+        $end = $this->token();
+        $this->next();
+
+        if ($start->is(Token::LEFT_BRACKET)) {
+            $left = Ast\ComparisonNode::greaterThanOrEqualTo($identifier, $a);
+        } else {
+            $left = Ast\ComparisonNode::greaterThan($identifier, $a);
+        }
+
+        if ($end->is(Token::RIGHT_BRACKET)) {
+            $right = Ast\ComparisonNode::lessThanOrEqualTo($identifier, $b);
+        } else {
+            $right = Ast\ComparisonNode::lessThan($identifier, $b);
+        }
+
+        return Ast\LogicalNode::and($left, $right);
     }
 
 

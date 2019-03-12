@@ -146,13 +146,6 @@ class ParsingTest extends TestCase
                     new Ast\StringNode('qux')
                 )
             ],
-            'Boolean true' => [
-                'foo is true',
-                Ast\ComparisonNode::equals(
-                    new Ast\IdentifierNode('foo'),
-                    New Ast\BooleanNode(true)
-                )
-            ],
             'Comments are removed, // on own line' => [
                 "// a comment\nfoo is true",
                 Ast\ComparisonNode::equals(

@@ -38,6 +38,38 @@ Determines if an identifier is less than a value.
 
 Determines if an identifier is less than or equal to a value.
 
+### `between`
+
+Determines if an identifier falls within a range.
+
+Two forms of this comparison are supported; a simple inclusive range, and a flexible range using interval notation.
+
+#### Simple Form
+
+This form of `between` implies an inclusive range, and is syntactic sugar for 
+`[identifier] >= [value] and [identifier] <= [value].
+
+- `foo between 10 and 20`
+- `foo between "a" and "z"`
+- `foo between date:"2019-01-01 00:00:00" and date:"2019-01-02 00:00:00"`
+
+Care should be taken when using this form of `between` with dates. Because the range is inclusive, a rule such as
+`foo between date:"2019-01-01 00:00:00" and date:"2019-01-02 00:00:00"` will evaluate true for `2019-01-02 00:00:00`
+(i.e. the first second of next day is included) which is probably not what is desired. Instead, consider using the
+interval notation form as described below.
+
+#### Interval Notation Form
+
+This form of `between` uses [interval notation](https://en.wikipedia.org/wiki/Interval_%28mathematics%29) to define
+the range. It is useful when you need control over whether the start and end of the range is included or not.
+
+- `foo between [1,5] // Closed, includes 1, 2, 3, 4, 5.`
+- `foo between (1,5) // Open, includes 2, 3, 4.`
+- `foo between (1,5] // Half-open, includes 2, 3, 4, 5.`
+- `foo between [1,5) // Half-open, includes 1, 2, 3, 4.`
+- `foo between ["a","e") // Half-open, includes b, c, d, e.`
+- `foo between [date:"2019-01-01 00:00:00", date:"2019-01-02 00:00:00") // Half-open, includes 2019-01-01 00:00:00 but not 2019-01-02 00:00:00.`
+
 ### `matches`
 
 Determines if an identifier matches a regular expression.
