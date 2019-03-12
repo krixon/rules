@@ -3,6 +3,10 @@
 namespace Krixon\Rules\Parser;
 
 use Krixon\Rules\Ast;
+use Krixon\Rules\Error\BufferErrorReporter;
+use Krixon\Rules\Error\ErrorCollection;
+use Krixon\Rules\Error\ErrorReporter;
+use Krixon\Rules\Error\ThrowErrorReporter;
 use Krixon\Rules\Exception\SyntaxError;
 use Krixon\Rules\Lexer\Lexer;
 use Krixon\Rules\Lexer\Token;
@@ -18,18 +22,25 @@ class DefaultParser implements Parser
     ];
 
     /**
+     * @var ErrorCollection
+     */
+    private $errors;
+
+    /**
      * @var Token[]
      */
     private $tokens;
     private $pointer;
-    private $pointerMax;
     private $lexer;
+    private $errorReporter;
     private $expression;
 
 
-    public function __construct(Lexer $lexer = null)
+
+    public function __construct(Lexer $lexer = null, ErrorReporter $errorReporter = null)
     {
-        $this->lexer = $lexer ?: new Lexer();
+        $this->lexer         = $lexer ?: new Lexer();
+        $this->errorReporter = $errorReporter ?: new BufferErrorReporter();
     }
 
 
@@ -38,20 +49,22 @@ class DefaultParser implements Parser
         $this->expression = $expression;
         $this->tokens     = $this->lexer->tokenize($this->expression);
         $this->pointer    = 0;
-        $this->pointerMax = count($this->tokens) - 1;
+        $this->errors     = new ErrorCollection();
 
-        // Check for an empty expression explicitly.
-        // This is not technically necessary, but allows for a more helpful error message over the more
-        // generic "Expected 'IDENTIFIER', got 'EOF'." that would otherwise be produced.
-        if ($this->token()->is(Token::EOF)) {
-            throw new SyntaxError('Empty expression.', '', 0);
+        try {
+            $node = $this->parseExpression();
+
+            $this->match(Token::EOF);
+
+            return $node;
+        } catch (SyntaxError $error) {
+            $this->errors->append($error);
+        } finally {
+            if ($this->errors->count()) {
+                $this->errorReporter->report($this->errors);
+                // TODO: Throw a compound SyntaxError exception.
+            }
         }
-
-        $node = $this->parseExpression();
-
-        $this->match(Token::EOF);
-
-        return $node;
     }
 
 
@@ -83,7 +96,18 @@ class DefaultParser implements Parser
         if ($this->token()->is(Token::LEFT_PAREN)) {
             $node = $this->parseSubExpression();
         } else {
-            $node = $this->parseComparisonExpression();
+            try {
+                $node = $this->parseComparisonExpression();
+            } catch (SyntaxError $error) {
+                $this->errors->append($error);
+
+                if (!$this->synchronize()) {
+                    // Unable to recover from the error. Panic!
+                    throw $error;
+                }
+
+                $node = $this->parsePrimaryNode();
+            }
         }
 
         return $node;
@@ -426,13 +450,13 @@ class DefaultParser implements Parser
 
     private function token() : ?Token
     {
-        return $this->pointer > $this->pointerMax ? null : $this->tokens[$this->pointer];
+        return $this->tokens[$this->pointer] ?? null;
     }
 
 
-    private function peek() : ?Token
+    private function peek($distance = 1) : ?Token
     {
-        return $this->tokens[$this->pointer + 1] ?? null;
+        return $this->tokens[$this->pointer + $distance] ?? null;
     }
 
 
@@ -505,5 +529,47 @@ class DefaultParser implements Parser
         if (!in_array($hint, $hints, true)) {
             throw SyntaxError::unexpectedToken($this->expression, $hints, $token);
         }
+    }
+
+
+    private function synchronize() : bool
+    {
+        $this->next();
+
+        // Look for an identifier followed by a comparison operator.
+        // An identifier can contain sub-identifiers separated by dots.
+
+        while (!$this->eof()) {
+            $offset = 0;
+
+            // The next comparison expression might be in a group. Start looking for the comparison after the
+            // left paren if that's the next token.
+            if ($this->is(Token::LEFT_PAREN)) {
+                $offset++;
+            }
+
+            $identifier = $this->peek($offset);
+            $operator   = $this->peek($offset + 1);
+
+            if ($identifier
+                && $operator
+                && $identifier->is(Token::IDENTIFIER)
+                && $operator->is(...Token::COMPARISON_OPERATORS)) {
+
+                return true;
+            }
+
+            $this->next();
+        }
+
+        return false;
+    }
+
+
+    private function eof() : bool
+    {
+        $token = $this->token();
+
+        return !$token || $token->is(Token::EOF);
     }
 }

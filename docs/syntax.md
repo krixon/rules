@@ -161,7 +161,11 @@ Dates are strings which have the `date:` type hint.
 foo is date:"2019-01-01"
 ```
 
-Any valid PHP [date and time format](http://php.net/manual/en/datetime.formats.php) can be used.
+Any valid PHP [date and time format](http://php.net/manual/en/datetime.formats.php) can be used. Note that any missing
+date or time components will default to the current value. For example, `date:"2012-01-01"` will result in the
+current time on 1st Jan 2012, and `2012` will result in the current time on the current day and month in 2012. To
+avoid any ambiguity, if a specific point in time is required it should be defined explicitly
+(e.g. `2012-01-01 12:00:00`).
 
 ```
 foo is date:"2019-01-01 12:30:45"

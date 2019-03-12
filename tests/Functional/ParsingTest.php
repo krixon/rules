@@ -2,6 +2,7 @@
 
 namespace Krixon\Rules\Tests\Functional;
 
+use Krixon\Rules\Error\BufferErrorReporter;
 use Krixon\Rules\Exception\SyntaxError;
 use Krixon\Rules\Parser\DefaultParser;
 use Krixon\Rules\Ast;
@@ -286,5 +287,18 @@ class ParsingTest extends TestCase
                 8
             ],
         ];
+    }
+
+
+    public function testRecoversFromError() : void
+    {
+//        $expression    = 'foo is invalid and foo is "valid" or or invalid and foo is "valid"';
+        $expression    = 'foo is invalid and (foo is "valid" or or invalid and (foo is "valid"))';
+        $errorReporter = new BufferErrorReporter();
+        $parser        = new DefaultParser(null, $errorReporter);
+
+        $ast = $parser->parse($expression);
+
+        static::assertCount(2, $errorReporter->syntaxErrors());
     }
 }
