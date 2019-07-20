@@ -168,3 +168,7 @@ A shorthand syntax for `not is` can also be used by simply omitting the `is`:
 ```
 email not "karl.rixon@gmail.com"
 ```
+
+# Contributing
+
+Please refer to [CONTRIBUTING.md](./CONTRIBUTING.md)
