@@ -2,6 +2,8 @@
 
 namespace Krixon\Rules\Tests\Functional;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Krixon\Rules\Exception\SyntaxError;
 use Krixon\Rules\Parser\DefaultParser;
 use Krixon\Rules\Ast;
@@ -11,6 +13,7 @@ class ParsingTest extends TestCase
 {
     /**
      * @dataProvider validExpressionProvider
+     * @throws SyntaxError
      */
     public function testExpectedAstIsProduced(string $expression, Ast\Node $expected)
     {
@@ -84,28 +87,28 @@ class ParsingTest extends TestCase
                 'foo is date:"2000-01-01 12:30:45"',
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    new Ast\DateNode(new \DateTimeImmutable('2000-01-01 12:30:45'))
+                    new Ast\DateNode(new DateTimeImmutable('2000-01-01 12:30:45'))
                 )
             ],
             'Date type hint with non-hinted timezone' => [
                 'foo is date:"2000-01-01 12:30:45" in "Asia/Tokyo"',
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    new Ast\DateNode(new \DateTimeImmutable('2000-01-01 12:30:45', new \DateTimeZone('Asia/Tokyo')))
+                    new Ast\DateNode(new DateTimeImmutable('2000-01-01 12:30:45', new DateTimeZone('Asia/Tokyo')))
                 )
             ],
             'Date type hint with hinted timezone' => [
                 'foo is date:"2000-01-01 12:30:45" in timezone:"Asia/Tokyo"',
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    new Ast\DateNode(new \DateTimeImmutable('2000-01-01 12:30:45', new \DateTimeZone('Asia/Tokyo')))
+                    new Ast\DateNode(new DateTimeImmutable('2000-01-01 12:30:45', new DateTimeZone('Asia/Tokyo')))
                 )
             ],
             'Timezone type hint' => [
                 'foo is timezone:"Asia/Tokyo"',
                 Ast\ComparisonNode::equals(
                     new Ast\IdentifierNode('foo'),
-                    new Ast\TimezoneNode(new \DateTimeZone('Asia/Tokyo'))
+                    new Ast\TimezoneNode(new DateTimeZone('Asia/Tokyo'))
                 )
             ],
             [
@@ -218,7 +221,7 @@ class ParsingTest extends TestCase
         try {
             $parser->parse($expression);
         } catch (SyntaxError $e) {
-            static::assertContains($message, $e->errorMessage());
+            static::assertStringContainsStringIgnoringCase($message, $e->errorMessage());
             static::assertSame($line, $e->expressionLine());
             static::assertSame($column, $e->expressionColumn());
 

@@ -13,13 +13,13 @@ namespace Krixon\Rules\Ast;
  */
 class ComparisonNode implements Node
 {
-    private const EQUALS         = 'EQUALS';
-    private const GREATER        = 'GREATER';
-    private const GREATER_EQUALS = 'GREATER_EQUALS';
-    private const LESS           = 'LESS';
-    private const LESS_EQUALS    = 'LESS_EQUALS';
-    private const IN             = 'IN';
-    private const MATCHES        = 'MATCHES';
+    public const EQUALS         = 'EQUALS';
+    public const GREATER        = 'GREATER';
+    public const GREATER_EQUALS = 'GREATER_EQUALS';
+    public const LESS           = 'LESS';
+    public const LESS_EQUALS    = 'LESS_EQUALS';
+    public const IN             = 'IN';
+    public const MATCHES        = 'MATCHES';
 
     private $identifier;
     private $value;
@@ -124,6 +124,24 @@ class ComparisonNode implements Node
     }
 
 
+    public function isValueBoolean() : bool
+    {
+        return $this->value instanceof BooleanNode;
+    }
+
+
+    public function isValueString() : bool
+    {
+        return $this->value instanceof StringNode;
+    }
+
+
+    public function isValueNumber() : bool
+    {
+        return $this->value instanceof NumberNode;
+    }
+
+
     public function identifier() : IdentifierNode
     {
         return $this->identifier;
@@ -133,6 +151,12 @@ class ComparisonNode implements Node
     public function identifierFullName() : string
     {
         return $this->identifier->fullName();
+    }
+
+
+    public function type() : string
+    {
+        return $this->type;
     }
 
 

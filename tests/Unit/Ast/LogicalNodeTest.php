@@ -25,7 +25,7 @@ class LogicalNodeTest extends TestCase
     private $xor;
 
 
-    protected function setUp()
+    protected function setUp() : void
     {
         parent::setUp();
 

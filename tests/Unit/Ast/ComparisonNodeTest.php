@@ -2,9 +2,11 @@
 
 namespace Krixon\Rules\Tests\Unit\Ast;
 
+use Krixon\Rules\Ast\BooleanNode;
 use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Ast\IdentifierNode;
 use Krixon\Rules\Ast\LiteralNodeList;
+use Krixon\Rules\Ast\NumberNode;
 use Krixon\Rules\Ast\StringNode;
 use PHPUnit\Framework\TestCase;
 
@@ -45,24 +47,46 @@ class ComparisonNodeTest extends TestCase
      */
     private $lte;
 
+    /**
+     * @var IdentifierNode
+     */
+    private $identifier;
 
-    protected function setUp()
+    /**
+     * @var StringNode
+     */
+    private $string;
+
+    /**
+     * @var BooleanNode
+     */
+    private $boolean;
+
+    /**
+     * @var NumberNode
+     */
+    private $number;
+
+
+    protected function setUp() : void
     {
         parent::setUp();
 
-        $identifier    = new IdentifierNode('foo');
-        $value         = new StringNode('bar');
-        $this->equal   = ComparisonNode::equals($identifier, $value);
-        $this->gt      = ComparisonNode::greaterThan($identifier, $value);
-        $this->gte     = ComparisonNode::greaterThanOrEqualTo($identifier, $value);
-        $this->lt      = ComparisonNode::lessThan($identifier, $value);
-        $this->lte     = ComparisonNode::lessThanOrEqualTo($identifier, $value);
-        $this->in      = ComparisonNode::in($identifier, new LiteralNodeList($value));
-        $this->matches = ComparisonNode::matches($identifier, $value);
+        $this->identifier = new IdentifierNode('foo');
+        $this->string     = new StringNode('bar');
+        $this->boolean    = new BooleanNode(true);
+        $this->number     = new NumberNode(42);
+        $this->equal      = ComparisonNode::equals($this->identifier, $this->string);
+        $this->gt         = ComparisonNode::greaterThan($this->identifier, $this->string);
+        $this->gte        = ComparisonNode::greaterThanOrEqualTo($this->identifier, $this->string);
+        $this->lt         = ComparisonNode::lessThan($this->identifier, $this->string);
+        $this->lte        = ComparisonNode::lessThanOrEqualTo($this->identifier, $this->string);
+        $this->in         = ComparisonNode::in($this->identifier, new LiteralNodeList($this->string));
+        $this->matches    = ComparisonNode::matches($this->identifier, $this->string);
     }
 
 
-    public function testCanDetermineIfComparisonTypeIsIn()
+    public function testCanDetermineIfComparisonTypeIsIn() : void
     {
         static::assertTrue($this->in->isIn());
         static::assertFalse($this->equal->isIn());
@@ -74,7 +98,7 @@ class ComparisonNodeTest extends TestCase
     }
 
 
-    public function testCanDetermineIfComparisonTypeIsEquals()
+    public function testCanDetermineIfComparisonTypeIsEquals() : void
     {
         static::assertTrue($this->equal->isEquals());
         static::assertFalse($this->in->isEquals());
@@ -86,7 +110,7 @@ class ComparisonNodeTest extends TestCase
     }
 
 
-    public function testCanDetermineIfComparisonTypeIsGreaterThan()
+    public function testCanDetermineIfComparisonTypeIsGreaterThan() : void
     {
         static::assertTrue($this->gt->isGreaterThan());
         static::assertFalse($this->equal->isGreaterThan());
@@ -98,7 +122,7 @@ class ComparisonNodeTest extends TestCase
     }
 
 
-    public function testCanDetermineIfComparisonTypeIsGreaterThanOrEqualTo()
+    public function testCanDetermineIfComparisonTypeIsGreaterThanOrEqualTo() : void
     {
         static::assertTrue($this->gte->isGreaterThanOrEqualTo());
         static::assertFalse($this->equal->isGreaterThanOrEqualTo());
@@ -110,7 +134,7 @@ class ComparisonNodeTest extends TestCase
     }
 
 
-    public function testCanDetermineIfComparisonTypeIsLessThan()
+    public function testCanDetermineIfComparisonTypeIsLessThan() : void
     {
         static::assertTrue($this->lt->isLessThan());
         static::assertFalse($this->equal->isLessThan());
@@ -122,7 +146,7 @@ class ComparisonNodeTest extends TestCase
     }
 
 
-    public function testCanDetermineIfComparisonTypeIsLessThanOrEqualTo()
+    public function testCanDetermineIfComparisonTypeIsLessThanOrEqualTo() : void
     {
         static::assertTrue($this->lte->isLessThanOrEqualTo());
         static::assertFalse($this->equal->isLessThanOrEqualTo());
@@ -134,7 +158,7 @@ class ComparisonNodeTest extends TestCase
     }
 
 
-    public function testCanDetermineIfComparisonTypeIsMatches()
+    public function testCanDetermineIfComparisonTypeIsMatches() : void
     {
         static::assertTrue($this->matches->isMatches());
         static::assertFalse($this->equal->isMatches());
@@ -143,5 +167,29 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse($this->lte->isMatches());
         static::assertFalse($this->gt->isMatches());
         static::assertFalse($this->gte->isMatches());
+    }
+
+
+    public function testCanDetermineIfValueIsString() : void
+    {
+        static::assertTrue(ComparisonNode::equals($this->identifier, $this->string)->isValueString());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->boolean)->isValueString());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->number)->isValueString());
+    }
+
+
+    public function testCanDetermineIfValueIsBoolean() : void
+    {
+        static::assertTrue(ComparisonNode::equals($this->identifier, $this->boolean)->isValueBoolean());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->string)->isValueBoolean());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->number)->isValueBoolean());
+    }
+
+
+    public function testCanDetermineIfValueIsNumber() : void
+    {
+        static::assertTrue(ComparisonNode::equals($this->identifier, $this->number)->isValueNumber());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->string)->isValueNumber());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->boolean)->isValueNumber());
     }
 }

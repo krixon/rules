@@ -16,6 +16,12 @@ final class BooleanNode implements LiteralNode
     }
 
 
+    public static function type(): string
+    {
+        return 'BOOLEAN';
+    }
+
+
     public function accept(Visitor $visitor) : void
     {
         $visitor->visitBoolean($this);

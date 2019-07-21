@@ -2,16 +2,24 @@
 
 namespace Krixon\Rules\Ast;
 
+use DateTimeImmutable;
+
 /**
- * @method \DateTimeImmutable value()
+ * @method DateTimeImmutable value()
  */
 final class DateNode implements LiteralNode
 {
     use ExposesValue;
 
-    public function __construct(\DateTimeImmutable $value)
+    public function __construct(DateTimeImmutable $value)
     {
         $this->value = $value;
+    }
+
+
+    public static function type(): string
+    {
+        return 'DATE';
     }
 
 

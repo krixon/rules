@@ -11,6 +11,9 @@ class LexerTest extends TestCase
 {
     /**
      * @dataProvider expressionProvider
+     * @param string $expression
+     * @param Token[] $expected
+     * @throws SyntaxError
      */
     public function testProducesExpectedTokens(string $expression, array $expected)
     {
@@ -152,7 +155,7 @@ class LexerTest extends TestCase
         try {
             $lexer->tokenize($expression);
         } catch (SyntaxError $e) {
-            static::assertContains($message, $e->errorMessage());
+            static::assertStringContainsStringIgnoringCase($message, $e->errorMessage());
             static::assertSame($line, $e->expressionLine());
             static::assertSame($column, $e->expressionColumn());
 

@@ -13,6 +13,12 @@ class LiteralNodeList implements LiteralNode
     }
 
 
+    public static function type() : string
+    {
+        return 'LIST';
+    }
+
+
     public function value()
     {
         return array_map(

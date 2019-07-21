@@ -16,6 +16,12 @@ final class NumberNode implements LiteralNode
     }
 
 
+    public static function type(): string
+    {
+        return 'NUMBER';
+    }
+
+
     public function accept(Visitor $visitor) : void
     {
         $visitor->visitNumber($this);

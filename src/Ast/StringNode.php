@@ -16,6 +16,12 @@ final class StringNode implements LiteralNode
     }
 
 
+    public static function type(): string
+    {
+        return 'STRING';
+    }
+
+
     public function accept(Visitor $visitor) : void
     {
         $visitor->visitString($this);

@@ -3,39 +3,30 @@
 namespace Krixon\Rules\Tests\Functional;
 
 use Krixon\Rules\Ast\ComparisonNode;
-use Krixon\Rules\Compiler\DelegatingCompiler;
-use Krixon\Rules\Compiler\SpecificationGenerator;
-use Krixon\Rules\Parser\DefaultParser;
 use Krixon\Rules\Specification\Composite;
 use Krixon\Rules\Specification\Not;
 use Krixon\Rules\Specification\Specification;
-use PHPUnit\Framework\TestCase;
 
-class CompilingTest extends TestCase implements SpecificationGenerator
+class SuccessfulCompilationTest extends CompilerTestCase
 {
     /**
      * @dataProvider dataProvider
      */
-    public function testCompiles(string $expression, Specification $expected)
+    public function testCompiles(string $expression, Specification $expected) : void
     {
-        $compiler      = new DelegatingCompiler($this);
-        $parser        = new DefaultParser();
-        $ast           = $parser->parse($expression);
-        $specification = $compiler->compile($ast);
-
-        static::assertEquals($expected, $specification);
+        static::assertEquals($expected, $this->compile($expression));
     }
 
 
-    public function dataProvider()
+    public function dataProvider() : array
     {
-        $eq      = 'EQUALS';
-        $gt      = 'GREATER';
-        $gte     = 'GREATER_EQUALS';
-        $lt      = 'LESS';
-        $lte     = 'LESS_EQUALS';
-        $matches = 'MATCHES';
-        $in      = 'IN';
+        $eq      = ComparisonNode::EQUALS;
+        $gt      = ComparisonNode::GREATER;
+        $gte     = ComparisonNode::GREATER_EQUALS;
+        $lt      = ComparisonNode::LESS;
+        $lte     = ComparisonNode::LESS_EQUALS;
+        $matches = ComparisonNode::MATCHES;
+        $in      = ComparisonNode::IN;
 
         return [
             [
@@ -268,43 +259,5 @@ class CompilingTest extends TestCase implements SpecificationGenerator
                 $this->stub('foo.bar', $eq, 'bar')
             ],
         ];
-    }
-
-
-    public function attempt(ComparisonNode $comparison) : ?Specification
-    {
-        $ref = new \ReflectionObject($comparison);
-
-        $property = $ref->getProperty('type');
-        $property->setAccessible(true);
-
-        $type = $property->getValue($comparison);
-
-        return $this->stub($comparison->identifierFullName(), $type, $comparison->literalValue());
-    }
-
-
-    private function stub(string $identifier, string $comparison, $value)
-    {
-        return new class ($identifier, $comparison, $value) implements Specification
-        {
-            private $identifier;
-            private $comparison;
-            private $value;
-
-
-            public function __construct(string $identifier, string $comparison, $value)
-            {
-                $this->identifier = $identifier;
-                $this->comparison = $comparison;
-                $this->value      = $value;
-            }
-
-
-            public function isSatisfiedBy($value) : bool
-            {
-                return true;
-            }
-        };
     }
 }
