@@ -2,6 +2,8 @@
 
 namespace Krixon\Rules\Ast;
 
+use Krixon\Rules\Operator;
+
 /**
  * A simple comparison of an identifier against a single, literal value.
  *
@@ -13,66 +15,58 @@ namespace Krixon\Rules\Ast;
  */
 class ComparisonNode implements Node
 {
-    public const EQUALS         = 'EQUALS';
-    public const GREATER        = 'GREATER';
-    public const GREATER_EQUALS = 'GREATER_EQUALS';
-    public const LESS           = 'LESS';
-    public const LESS_EQUALS    = 'LESS_EQUALS';
-    public const IN             = 'IN';
-    public const MATCHES        = 'MATCHES';
-
     private $identifier;
+    private $operator;
     private $value;
-    private $type;
 
 
-    private function __construct(string $type, IdentifierNode $identifier, LiteralNode $value)
+    private function __construct(IdentifierNode $identifier, Operator $operator, LiteralNode $value)
     {
         $this->identifier = $identifier;
+        $this->operator   = $operator;
         $this->value      = $value;
-        $this->type       = $type;
     }
 
 
     public static function equals(IdentifierNode $left, LiteralNode $right) : self
     {
-        return new static(self::EQUALS, $left, $right);
+        return new static($left, Operator::equals(), $right);
     }
 
 
     public static function greaterThan(IdentifierNode $left, LiteralNode $right) : self
     {
-        return new static(self::GREATER, $left, $right);
+        return new static($left, Operator::greaterThan(), $right);
     }
 
 
     public static function greaterThanOrEqualTo(IdentifierNode $left, LiteralNode $right) : self
     {
-        return new static(self::GREATER_EQUALS, $left, $right);
+        return new static($left, Operator::greaterThanOrEquals(), $right);
     }
 
 
     public static function lessThan(IdentifierNode $left, LiteralNode $right) : self
     {
-        return new static(self::LESS, $left, $right);
+        return new static($left, Operator::lessThan(), $right);
     }
 
 
     public static function lessThanOrEqualTo(IdentifierNode $left, LiteralNode $right) : self
     {
-        return new static(self::LESS_EQUALS, $left, $right);
+        return new static($left, Operator::lessThanOrEquals(), $right);
     }
 
 
     public static function in(IdentifierNode $left, LiteralNodeList $right) : self
     {
-        return new static(self::IN, $left, $right);
+        return new static($left, Operator::in(), $right);
     }
 
 
     public static function matches(IdentifierNode $left, StringNode $right) : self
     {
-        return new static(self::MATCHES, $left, $right);
+        return new static($left, Operator::matches(), $right);
     }
 
 
@@ -84,43 +78,43 @@ class ComparisonNode implements Node
 
     public function isEquals() : bool
     {
-        return $this->type === self::EQUALS;
+        return $this->operator->isEquals();
     }
 
 
     public function isGreaterThan() : bool
     {
-        return $this->type === self::GREATER;
+        return $this->operator->isGreaterThan();
     }
 
 
     public function isGreaterThanOrEqualTo() : bool
     {
-        return $this->type === self::GREATER_EQUALS;
+        return $this->operator->isGreaterThanOrEqualTo();
     }
 
 
     public function isLessThan() : bool
     {
-        return $this->type === self::LESS;
+        return $this->operator->isLessThan();
     }
 
 
     public function isLessThanOrEqualTo() : bool
     {
-        return $this->type === self::LESS_EQUALS;
+        return $this->operator->isLessThanOrEqualTo();
     }
 
 
     public function isIn() : bool
     {
-        return $this->type === self::IN;
+        return $this->operator->isIn();
     }
 
 
     public function isMatches() : bool
     {
-        return $this->type === self::MATCHES;
+        return $this->operator->isMatches();
     }
 
 
@@ -142,6 +136,12 @@ class ComparisonNode implements Node
     }
 
 
+    public function isValueDate() : bool
+    {
+        return $this->value instanceof DateNode;
+    }
+
+
     public function identifier() : IdentifierNode
     {
         return $this->identifier;
@@ -154,9 +154,9 @@ class ComparisonNode implements Node
     }
 
 
-    public function type() : string
+    public function operator() : Operator
     {
-        return $this->type;
+        return $this->operator;
     }
 
 

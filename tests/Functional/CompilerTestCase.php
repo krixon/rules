@@ -8,6 +8,7 @@ use Krixon\Rules\Compiler\DelegatingCompiler;
 use Krixon\Rules\Compiler\SpecificationGenerator;
 use Krixon\Rules\Exception\CompilerError;
 use Krixon\Rules\Exception\SyntaxError;
+use Krixon\Rules\Operator;
 use Krixon\Rules\Parser\DefaultParser;
 use Krixon\Rules\Parser\Parser;
 use Krixon\Rules\Specification\Specification;
@@ -37,13 +38,13 @@ abstract class CompilerTestCase extends TestCase implements SpecificationGenerat
 
     public function attempt(ComparisonNode $comparison) : ?Specification
     {
-        return $this->stub($comparison->identifierFullName(), $comparison->type(), $comparison->literalValue());
+        return $this->stub($comparison->identifierFullName(), $comparison->operator(), $comparison->literalValue());
     }
 
 
-    final protected function stub(string $identifier, string $comparison, $value) : Specification
+    final protected function stub(string $identifier, Operator $operator, $value) : Specification
     {
-        return new class ($identifier, $comparison, $value) implements Specification
+        return new class ($identifier, $operator, $value) implements Specification
         {
             private $identifier;
             private $comparison;

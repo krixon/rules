@@ -132,8 +132,8 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
             return;
         }
 
-        throw CompilerError::unsupportedComparisonType(
-            $comparison->type(),
+        throw CompilerError::unsupportedComparisonOperator(
+            $comparison->operator(),
             $comparison->identifierFullName(),
             $comparison->value()::type()
         );
