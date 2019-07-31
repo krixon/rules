@@ -3,6 +3,7 @@
 namespace Krixon\Rules\Tests\Unit\Exception;
 
 use Krixon\Rules\Exception\CompilerError;
+use Krixon\Rules\Operator;
 use PHPUnit\Framework\TestCase;
 
 class CompilerErrorTest extends TestCase
@@ -26,8 +27,11 @@ class CompilerErrorTest extends TestCase
 
     public function testProducesExpectedMessageForUnsupportedComparison()
     {
-        $exception = CompilerError::unsupportedComparisonType('GREATER', 'foo');
+        $exception = CompilerError::unsupportedComparisonOperator(Operator::greaterThan(), 'foo');
 
-        static::assertSame("Unsupported comparison type 'GREATER' for identifier 'foo'.", $exception->getMessage());
+        static::assertSame(
+            "Unsupported comparison operator 'GREATER' for identifier 'foo'.",
+            $exception->getMessage()
+        );
     }
 }

@@ -12,7 +12,7 @@ class UnsupportedComparisonTest extends CompilerTestCase
     public function testCompilerErrorOnUnsupportedComparison(string $expression) : void
     {
         $this->expectException(CompilerError::class);
-        $this->expectExceptionCode(CompilerError::UNSUPPORTED_COMPARISON);
+        $this->expectExceptionCode(CompilerError::UNSUPPORTED_COMPARISON_OPERATOR);
 
         $this->compile($expression);
     }

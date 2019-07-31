@@ -3,13 +3,16 @@
 namespace Krixon\Rules\Exception;
 
 use Exception;
+use Krixon\Rules\Operator;
+use function vsprintf;
 
 final class CompilerError extends Exception
 {
-    public const GENERIC                 = 0;
-    public const UNKNOWN_IDENTIFIER      = 1;
-    public const UNKNOWN_COMPARISON_TYPE = 2;
-    public const UNSUPPORTED_COMPARISON  = 3;
+    public const GENERIC                         = 0;
+    public const UNKNOWN_IDENTIFIER              = 1;
+    public const UNKNOWN_COMPARISON_TYPE         = 2;
+    public const UNSUPPORTED_COMPARISON_OPERATOR = 3;
+    public const UNSUPPORTED_VALUE_TYPE          = 4;
 
 
     public function __construct(string $message, int $code = self::GENERIC)
@@ -33,20 +36,38 @@ final class CompilerError extends Exception
     }
 
 
-    public static function unsupportedComparisonType(
-        string $type,
+    public static function unsupportedComparisonOperator(
+        Operator $operator,
         string $identifier,
         ?string $literalType = null
     ) : self
     {
-        $message = "Unsupported comparison type '%s' for identifier '%s'";
-        $args    = [$type, $identifier];
+        $message = "Unsupported comparison operator '%s' for identifier '%s'";
+        $args    = [$operator, $identifier];
 
         if (null !== $literalType) {
             $message .= " and operand type '%s'";
             $args[]  = $literalType;
         }
 
-        return new CompilerError(vsprintf("$message.", $args), self::UNSUPPORTED_COMPARISON);
+        return new CompilerError(vsprintf("$message.", $args), self::UNSUPPORTED_COMPARISON_OPERATOR);
+    }
+
+
+    public static function unsupportedValueType(
+        $value,
+        string $identifier,
+        ?string $expected = null
+    ) : self
+    {
+        $message = "Unsupported value of type %s for identifier '%s'";
+        $args    = [gettype($value), $identifier];
+
+        if (null !== $expected) {
+            $message .= ". Expected: %s";
+            $args[]  = $expected;
+        }
+
+        return new CompilerError(vsprintf("$message.", $args), self::UNSUPPORTED_VALUE_TYPE);
     }
 }

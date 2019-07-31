@@ -3,6 +3,7 @@
 namespace Krixon\Rules\Tests\Functional;
 
 use Krixon\Rules\Ast\ComparisonNode;
+use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Composite;
 use Krixon\Rules\Specification\Not;
 use Krixon\Rules\Specification\Specification;
@@ -20,13 +21,13 @@ class SuccessfulCompilationTest extends CompilerTestCase
 
     public function dataProvider() : array
     {
-        $eq      = ComparisonNode::EQUALS;
-        $gt      = ComparisonNode::GREATER;
-        $gte     = ComparisonNode::GREATER_EQUALS;
-        $lt      = ComparisonNode::LESS;
-        $lte     = ComparisonNode::LESS_EQUALS;
-        $matches = ComparisonNode::MATCHES;
-        $in      = ComparisonNode::IN;
+        $eq      = Operator::equals();
+        $gt      = Operator::greaterThan();
+        $gte     = Operator::greaterThanOrEquals();
+        $lt      = Operator::lessThan();
+        $lte     = Operator::lessThanOrEquals();
+        $matches = Operator::matches();
+        $in      = Operator::in();
 
         return [
             [
