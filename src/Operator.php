@@ -109,16 +109,4 @@ final class Operator
     {
         return $this->operator === self::MATCHES;
     }
-
-
-    public function is(Operator ...$other) : bool
-    {
-        foreach ($other as $candidate) {
-            if ($this->operator === $candidate->operator) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }

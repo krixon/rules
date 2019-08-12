@@ -6,7 +6,7 @@ use DateTimeInterface;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\UnsupportedOperator;
 
-class DateMatches implements Specification
+abstract class DateMatches implements Specification
 {
     private $date;
     private $operator;
@@ -14,12 +14,14 @@ class DateMatches implements Specification
 
     public function __construct(DateTimeInterface $date, ?Operator $operator = null)
     {
-        $this->date     = $date;
-        $this->operator = $operator ?? Operator::equals();
+        $operator = $operator ?? Operator::equals();
 
-        if (!$this->operator->is(...$this->supportedOperators())) {
-            throw new UnsupportedOperator($this, $this->operator);
+        if (!$this->supportsOperator($operator)) {
+            throw new UnsupportedOperator($this, $operator);
         }
+
+        $this->date     = $date;
+        $this->operator = $operator;
     }
 
 
@@ -48,26 +50,18 @@ class DateMatches implements Specification
     }
 
 
-    /**
-     * Override this method to extract the date which will be compared against the desired value.
-     */
-    protected function extract($value) : DateTimeInterface
+    protected function supportsOperator(Operator $operator) : bool
     {
-        return $value;
+        return $operator->isEquals()
+            || $operator->isLessThan()
+            || $operator->isLessThanOrEqualTo()
+            || $operator->isGreaterThan()
+            || $operator->isGreaterThanOrEqualTo();
     }
 
 
     /**
-     * @return Operator[]
+     * Extract the date which will be compared against the specified value.
      */
-    protected function supportedOperators() : array
-    {
-        return [
-            Operator::equals(),
-            Operator::lessThan(),
-            Operator::lessThanOrEquals(),
-            Operator::greaterThan(),
-            Operator::greaterThanOrEquals()
-        ];
-    }
+    abstract protected function extract($value) : DateTimeInterface;
 }

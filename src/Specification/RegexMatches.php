@@ -2,7 +2,7 @@
 
 namespace Krixon\Rules\Specification;
 
-class RegexMatches implements Specification
+abstract class RegexMatches implements Specification
 {
     private $pattern;
     private $delimiter;
@@ -23,11 +23,5 @@ class RegexMatches implements Specification
     }
 
 
-    /**
-     * Override this method to extract the string which will be tested against the pattern.
-     */
-    protected function extract($value) : string
-    {
-        return (string)$value;
-    }
+    abstract protected function extract($value) : string;
 }

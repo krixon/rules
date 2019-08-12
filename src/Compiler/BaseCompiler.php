@@ -61,7 +61,7 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
                 // This should not be possible to reach in a bug-free implementation, but is thrown here to
                 // help prevent future bugs if a new composite type is implemented without a corresponding branch
                 // in this case statement.
-                throw CompilerError::unknownComparisonType();
+                throw CompilerError::unsupportedLogicalOperation();
                 // @codeCoverageIgnoreEnd
         }
     }
@@ -114,7 +114,7 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
 
         // @codeCoverageIgnoreStart
         // It is impossible to reach this point in a bug-free implementation.
-        throw CompilerError::unknownComparisonType();
+        throw CompilerError::unsupportedLogicalOperation();
         // @codeCoverageIgnoreEnd
     }
 
@@ -132,10 +132,6 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
             return;
         }
 
-        throw CompilerError::unsupportedComparisonOperator(
-            $comparison->operator(),
-            $comparison->identifierFullName(),
-            $comparison->value()::type()
-        );
+        throw CompilerError::unsupportedComparisonOperatorFromNode($comparison);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Krixon\Rules\Specification;
 
-class StringMatches implements Specification
+abstract class StringMatches implements Specification
 {
     private $string;
 
@@ -19,11 +19,5 @@ class StringMatches implements Specification
     }
 
 
-    /**
-     * Override this method to extract the string which will be compared against the desired value.
-     */
-    protected function extract($value) : string
-    {
-        return $value;
-    }
+    abstract protected function extract($value) : string;
 }

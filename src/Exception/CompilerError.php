@@ -3,21 +3,27 @@
 namespace Krixon\Rules\Exception;
 
 use Exception;
+use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Operator;
+use Krixon\Rules\Specification\Exception\SpecificationError;
+use Krixon\Rules\Specification\Exception\UnsupportedOperator;
+use Krixon\Rules\Specification\Exception\UnsupportedValue;
+use Throwable;
+use function sprintf;
 use function vsprintf;
 
 final class CompilerError extends Exception
 {
     public const GENERIC                         = 0;
     public const UNKNOWN_IDENTIFIER              = 1;
-    public const UNKNOWN_COMPARISON_TYPE         = 2;
+    public const UNSUPPORTED_LOGICAL_OPERATION   = 2;
     public const UNSUPPORTED_COMPARISON_OPERATOR = 3;
     public const UNSUPPORTED_VALUE_TYPE          = 4;
 
 
-    public function __construct(string $message, int $code = self::GENERIC)
+    public function __construct(string $message, int $code = self::GENERIC, Throwable $previous = null)
     {
-        parent::__construct($message, $code);
+        parent::__construct($message, $code, $previous);
     }
 
 
@@ -27,30 +33,55 @@ final class CompilerError extends Exception
     }
 
 
-    public static function unknownComparisonType() : self
+    public static function unsupportedLogicalOperation() : self
     {
-        // @codeCoverageIgnoreStart
-        // It is not expected that this is ever thrown in a bug-free implementation.
-        return new CompilerError('Unknown comparison type.', self::UNKNOWN_COMPARISON_TYPE);
-        // @codeCoverageIgnoreEnd
+        return new self('Unsupported logical operation.', self::UNSUPPORTED_LOGICAL_OPERATION);
     }
 
 
     public static function unsupportedComparisonOperator(
         Operator $operator,
         string $identifier,
-        ?string $literalType = null
-    ) : self
-    {
-        $message = "Unsupported comparison operator '%s' for identifier '%s'";
-        $args    = [$operator, $identifier];
+        string $type,
+        Throwable $previous = null
+    ) : self {
+        $message = sprintf(
+            "Unsupported comparison operator '%s' for identifier '%s' and operand type '%s'.",
+            $operator,
+            $identifier,
+            $type
+        );
 
-        if (null !== $literalType) {
-            $message .= " and operand type '%s'";
-            $args[]  = $literalType;
+        return new self($message, self::UNSUPPORTED_COMPARISON_OPERATOR, $previous);
+    }
+
+
+    public static function unsupportedComparisonOperatorFromNode(ComparisonNode $node, Throwable $previous = null) : self
+    {
+        return self::unsupportedComparisonOperator(
+            $node->operator(),
+            $node->identifierFullName(),
+            $node->value()::type(),
+            $previous
+        );
+    }
+
+
+    public static function fromSpecificationError(SpecificationError $exception, ComparisonNode $node) : self
+    {
+        if ($exception instanceof UnsupportedOperator) {
+            return self::unsupportedComparisonOperatorFromNode($node);
         }
 
-        return new CompilerError(vsprintf("$message.", $args), self::UNSUPPORTED_COMPARISON_OPERATOR);
+        if ($exception instanceof UnsupportedValue) {
+            return self::unsupportedValueType(
+                $node->literalValue(),
+                $node->identifierFullName(),
+                $exception->expected()
+            );
+        }
+
+        return new self('An error occurred when generating a specification.', self::GENERIC, $exception);
     }
 
 
@@ -58,8 +89,8 @@ final class CompilerError extends Exception
         $value,
         string $identifier,
         ?string $expected = null
-    ) : self
-    {
+        , Throwable $previous = null
+    ) : self {
         $message = "Unsupported value of type %s for identifier '%s'";
         $args    = [gettype($value), $identifier];
 
@@ -68,6 +99,6 @@ final class CompilerError extends Exception
             $args[]  = $expected;
         }
 
-        return new CompilerError(vsprintf("$message.", $args), self::UNSUPPORTED_VALUE_TYPE);
+        return new self(vsprintf("$message.", $args), self::UNSUPPORTED_VALUE_TYPE, $previous);
     }
 }

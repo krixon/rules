@@ -2,32 +2,71 @@
 
 namespace Krixon\Rules\Specification;
 
-class NumberMatches implements Specification
+use Krixon\Rules\Operator;
+use Krixon\Rules\Specification\Exception\UnsupportedOperator;
+use function abs;
+use const PHP_FLOAT_EPSILON;
+
+abstract class NumberMatches implements Specification
 {
     private $number;
+    private $operator;
     private $epsilon;
 
 
-    public function __construct(float $number, float $epsilon = 0.00001)
+    public function __construct(float $number, ?Operator $operator = null, float $epsilon = PHP_FLOAT_EPSILON)
     {
-        $this->number  = $number;
-        $this->epsilon = $epsilon;
+        $operator = $operator ?? Operator::equals();
+
+        if (!$this->supportsOperator($operator)) {
+            throw new UnsupportedOperator($this, $operator);
+        }
+
+        $this->number   = $number;
+        $this->operator = $operator;
+        $this->epsilon  = $epsilon;
     }
 
 
     public function isSatisfiedBy($value) : bool
     {
         $value = $this->extract($value);
+        $equal = abs($value - $this->number) < $this->epsilon;
 
-        return is_numeric($value) && abs($this->number - $value) < $this->epsilon;
+        switch (true) {
+            case $this->operator->isEquals():
+                return $equal;
+            case $this->operator->isLessThan():
+                return !$equal && ($value < $this->number);
+            case $this->operator->isLessThanOrEqualTo():
+                return $equal || $value < $this->number;
+            case $this->operator->isGreaterThan():
+                return !$equal && ($value > $this->number);
+            case $this->operator->isGreaterThanOrEqualTo():
+                return $equal || $value > $this->number;
+        }
+
+        // @codeCoverageIgnoreStart
+        // Already validated in the constructor that the operator is supported. This line cannot be reached
+        // in a bug-free implementation.
+        throw new UnsupportedOperator($this, $this->operator);
+        // @codeCoverageIgnoreEnd
     }
 
 
     /**
-     * Override this method to extract the number which will be compared against the desired value.
+     * @param mixed $value
+     * @return int|float
      */
-    protected function extract($value)
+    abstract protected function extract($value);
+
+
+    protected function supportsOperator(Operator $operator) : bool
     {
-        return $value;
+        return $operator->isEquals()
+            || $operator->isLessThan()
+            || $operator->isLessThanOrEqualTo()
+            || $operator->isGreaterThan()
+            || $operator->isGreaterThanOrEqualTo();
     }
 }

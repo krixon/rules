@@ -7,17 +7,35 @@ use Krixon\Rules\Specification\Specification;
 use Throwable;
 use function get_class;
 use function gettype;
+use function vsprintf;
 
 class UnsupportedValue extends DomainException implements SpecificationError
 {
-    public function __construct(Specification $specification, $value, Throwable $previous = null)
-    {
-        $message = sprintf(
-            'Unsupported value of type %s for specification %s.',
-            gettype($value),
-            get_class($specification)
-        );
+    private $expected;
 
-        parent::__construct($message, 0, $previous);
+
+    public function __construct(
+        Specification $specification,
+        $value,
+        ?string $expected = null,
+        ?Throwable $previous = null
+    ) {
+        $this->expected = $expected;
+
+        $message = "Unsupported value of type %s for specification '%s'";
+        $args    = [gettype($value), get_class($specification)];
+
+        if (null !== $expected) {
+            $message .= '. Expected: %s';
+            $args[]  = $expected;
+        }
+
+        parent::__construct(vsprintf("$message.", $args), 0, $previous);
+    }
+
+
+    public function expected() : ?string
+    {
+        return $this->expected;
     }
 }

@@ -3,20 +3,13 @@
 namespace Krixon\Rules\Tests\Unit\Specification;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\DateMatches;
 use Krixon\Rules\Specification\Exception\UnsupportedOperator;
 
 class DateMatchesTest extends SpecificationTestCase
 {
-    public function testConstructable()
-    {
-        $specification = self::eq('2000-01-01 00:00:00');
-
-        static::assertInstanceOf(DateMatches::class, $specification);
-    }
-
-
     public function dataProvider() : array
     {
         return [
@@ -50,7 +43,7 @@ class DateMatchesTest extends SpecificationTestCase
     {
         $this->expectException(UnsupportedOperator::class);
 
-        new DateMatches(self::date('2000-01-01 00:00:00'), $unsupported);
+        self::specification(self::date('2000-01-01 00:00:00'), $unsupported);
     }
 
 
@@ -65,36 +58,48 @@ class DateMatchesTest extends SpecificationTestCase
 
     private static function eq(string $date) : DateMatches
     {
-        return new DateMatches(self::date($date), Operator::equals());
+        return self::specification(self::date($date), Operator::equals());
     }
 
 
     private static function lt(string $date) : DateMatches
     {
-        return new DateMatches(self::date($date), Operator::lessThan());
+        return self::specification(self::date($date), Operator::lessThan());
     }
 
 
     private static function lte(string $date) : DateMatches
     {
-        return new DateMatches(self::date($date), Operator::lessThanOrEquals());
+        return self::specification(self::date($date), Operator::lessThanOrEquals());
     }
 
 
     private static function gt(string $date) : DateMatches
     {
-        return new DateMatches(self::date($date), Operator::greaterThan());
+        return self::specification(self::date($date), Operator::greaterThan());
     }
 
 
     private static function gte(string $date) : DateMatches
     {
-        return new DateMatches(self::date($date), Operator::greaterThanOrEquals());
+        return self::specification(self::date($date), Operator::greaterThanOrEquals());
     }
 
 
     private static function date(string $date) : DateTimeImmutable
     {
         return new DateTimeImmutable($date);
+    }
+
+
+    private static function specification(DateTimeInterface $date, Operator $operator) : DateMatches
+    {
+        return new class($date, $operator) extends DateMatches
+        {
+            protected function extract($value) : DateTimeInterface
+            {
+                return $value;
+            }
+        };
     }
 }
