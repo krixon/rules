@@ -2,39 +2,37 @@
 
 namespace Krixon\Rules\Tests\Unit\Specification;
 
-use DateTimeImmutable;
-use DateTimeInterface;
 use Krixon\Rules\Ast\ComparisonNode;
-use Krixon\Rules\Ast\DateNode;
+use Krixon\Rules\Ast\NumberNode;
 use Krixon\Rules\Exception\CompilerError;
 use Krixon\Rules\Operator;
-use Krixon\Rules\Specification\DateMatches;
-use Krixon\Rules\Specification\DateMatchesGenerator;
 use Krixon\Rules\Specification\Exception\UnsupportedOperator;
+use Krixon\Rules\Specification\NumberMatches;
+use Krixon\Rules\Specification\NumberMatchesGenerator;
 use PHPUnit\Framework\TestCase;
 
-class DateMatchesGeneratorTest extends TestCase
+class NumberMatchesGeneratorTest extends TestCase
 {
     public function testGeneratesExpectedSpecification() : void
     {
         $comparison = $this->createMock(ComparisonNode::class);
 
-        $comparison->method('isValueDate')->willReturn(true);
-        $comparison->method('literalValue')->willReturn(new DateTimeImmutable('2000-01-01 00:00:00'));
+        $comparison->method('isValueNumber')->willReturn(true);
+        $comparison->method('literalValue')->willReturn(42);
         $comparison->method('operator')->willReturn(Operator::greaterThan());
 
         $specification = self::generator()->attempt($comparison);
 
-        static::assertInstanceOf(DateMatches::class, $specification);
-        static::assertTrue($specification->isSatisfiedBy(new DateTimeImmutable('2020-01-01 00:00:00')));
+        static::assertInstanceOf(NumberMatches::class, $specification);
+        static::assertTrue($specification->isSatisfiedBy(43));
     }
 
 
-    public function testSkipsGenerationWithNonDateValueNode() : void
+    public function testSkipsGenerationWithNonNumberValueNode() : void
     {
         $comparison = $this->createMock(ComparisonNode::class);
 
-        $comparison->method('isValueDate')->willReturn(false);
+        $comparison->method('isValueNumber')->willReturn(false);
 
         static::assertNull(self::generator()->attempt($comparison));
     }
@@ -42,16 +40,15 @@ class DateMatchesGeneratorTest extends TestCase
 
     public function testThrowsWithUnsupportedComparisonOperator() : void
     {
-        $date       = new DateTimeImmutable('2000-01-01 00:00:00');
         $comparison = $this->createMock(ComparisonNode::class);
 
-        $comparison->method('isValueDate')->willReturn(true);
-        $comparison->method('literalValue')->willReturn($date);
+        $comparison->method('isValueNumber')->willReturn(true);
+        $comparison->method('literalValue')->willReturn(42);
         // This has to use a real node object because static methods cannot be invoked on mocks.
-        $comparison->method('value')->willReturn(new DateNode($date));
+        $comparison->method('value')->willReturn(new NumberNode(42));
         $comparison->method('operator')->willReturn(Operator::matches());
 
-        $generator  = $this->getMockForAbstractClass(DateMatchesGenerator::class);
+        $generator = $this->getMockForAbstractClass(NumberMatchesGenerator::class);
 
         $generator->method('generate')->willThrowException($this->createMock(UnsupportedOperator::class));
 
@@ -62,15 +59,15 @@ class DateMatchesGeneratorTest extends TestCase
     }
 
 
-    private static function generator() : DateMatchesGenerator
+    private static function generator() : NumberMatchesGenerator
     {
-        return new class() extends DateMatchesGenerator
+        return new class() extends NumberMatchesGenerator
         {
-            protected function generate(DateTimeInterface $date, Operator $operator) : DateMatches
+            protected function generate(float $number, Operator $operator) : NumberMatches
             {
-                return new class($date, $operator) extends DateMatches
+                return new class($number, $operator) extends NumberMatches
                 {
-                    protected function extract($value) : DateTimeInterface
+                    protected function extract($value)
                     {
                         return $value;
                     }

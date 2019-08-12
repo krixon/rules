@@ -2,18 +2,17 @@
 
 namespace Krixon\Rules\Specification;
 
-use DateTimeInterface;
 use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Compiler\SpecificationGenerator;
 use Krixon\Rules\Exception\CompilerError;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 
-abstract class DateMatchesGenerator implements SpecificationGenerator
+abstract class NumberMatchesGenerator implements SpecificationGenerator
 {
     public function attempt(ComparisonNode $comparison) : ?Specification
     {
-        if (!$comparison->isValueDate()) {
+        if (!$comparison->isValueNumber()) {
             return null;
         }
 
@@ -28,5 +27,5 @@ abstract class DateMatchesGenerator implements SpecificationGenerator
     /**
      * @throws SpecificationError|CompilerError
      */
-    abstract protected function generate(DateTimeInterface $date, Operator $operator) : DateMatches;
+    abstract protected function generate(float $number, Operator $operator) : NumberMatches;
 }

@@ -2,6 +2,8 @@
 
 namespace Krixon\Rules\Specification\Exception;
 
-interface SpecificationError
+use Throwable;
+
+interface SpecificationError extends Throwable
 {
 }

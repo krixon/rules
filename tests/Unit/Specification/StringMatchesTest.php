@@ -6,19 +6,23 @@ use Krixon\Rules\Specification\StringMatches;
 
 class StringMatchesTest extends SpecificationTestCase
 {
-    public function testConstructable()
-    {
-        $specification = new StringMatches('foo');
-
-        static::assertInstanceOf(StringMatches::class, $specification);
-    }
-
-
     public function dataProvider() : array
     {
         return [
-            [new StringMatches('foo'), 'foo', true],
-            [new StringMatches('foo'), 'bar', false],
+            [self::specification('foo'), 'foo', true],
+            [self::specification('foo'), 'bar', false],
         ];
+    }
+
+
+    private static function specification(string $string) : StringMatches
+    {
+        return new class($string) extends StringMatches
+        {
+            protected function extract($value) : string
+            {
+                return $value;
+            }
+        };
     }
 }
