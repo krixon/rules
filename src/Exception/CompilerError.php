@@ -88,8 +88,8 @@ final class CompilerError extends Exception
     public static function unsupportedValueType(
         $value,
         string $identifier,
-        ?string $expected = null
-        , Throwable $previous = null
+        ?string $expected = null,
+        Throwable $previous = null
     ) : self {
         $message = "Unsupported value of type %s for identifier '%s'";
         $args    = [gettype($value), $identifier];
@@ -100,5 +100,14 @@ final class CompilerError extends Exception
         }
 
         return new self(vsprintf("$message.", $args), self::UNSUPPORTED_VALUE_TYPE, $previous);
+    }
+
+
+    public static function unsupportedValueTypeFromNode(
+        ComparisonNode $node,
+        ?string $expected = null,
+        Throwable $previous = null
+    ) : self {
+        return self::unsupportedValueType($node->literalValue(), $node->identifierFullName(), $expected, $previous);
     }
 }
