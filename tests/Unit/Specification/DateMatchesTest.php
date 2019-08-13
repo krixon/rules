@@ -3,10 +3,10 @@
 namespace Krixon\Rules\Tests\Unit\Specification;
 
 use DateTimeImmutable;
-use DateTimeInterface;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\DateMatches;
 use Krixon\Rules\Specification\Exception\UnsupportedOperator;
+use Krixon\Rules\Specification\StringMatches;
 
 class DateMatchesTest extends SpecificationTestCase
 {
@@ -52,6 +52,32 @@ class DateMatchesTest extends SpecificationTestCase
         return [
             [Operator::matches()],
             [Operator::in()],
+        ];
+    }
+
+
+    /**
+     * @dataProvider unsatisfiedOnNonDateValueProvider
+     *
+     * @param mixed $unsupported
+     */
+    public static function testUnsatisfiedOnNonDateValue($unsupported) : void
+    {
+        static::assertFalse((new DateMatches(new \DateTimeImmutable()))->isSatisfiedBy($unsupported));
+    }
+
+
+    public static function unsatisfiedOnNonDateValueProvider() : array
+    {
+        return [
+            [[]],
+            ['string'],
+            [true],
+            [false],
+            [null],
+            [42],
+            [42.5],
+            [new \stdClass()],
         ];
     }
 

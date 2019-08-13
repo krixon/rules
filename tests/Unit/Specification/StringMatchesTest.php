@@ -13,4 +13,29 @@ class StringMatchesTest extends SpecificationTestCase
             [new StringMatches('foo'), 'bar', false],
         ];
     }
+
+
+    /**
+     * @dataProvider unsatisfiedOnNonStringValueProvider
+     *
+     * @param mixed $unsupported
+     */
+    public static function testUnsatisfiedOnNonStringValue($unsupported) : void
+    {
+        static::assertFalse((new StringMatches('foo'))->isSatisfiedBy($unsupported));
+    }
+
+
+    public static function unsatisfiedOnNonStringValueProvider() : array
+    {
+        return [
+            [[]],
+            [true],
+            [false],
+            [null],
+            [42],
+            [42.5],
+            [new \stdClass()],
+        ];
+    }
 }

@@ -5,7 +5,6 @@ namespace Krixon\Rules\Specification;
 use DateTimeInterface;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\UnsupportedOperator;
-use Krixon\Rules\Specification\Exception\UnsupportedValue;
 
 class DateMatches implements Specification
 {
@@ -29,6 +28,10 @@ class DateMatches implements Specification
     public function isSatisfiedBy($value) : bool
     {
         $value = $this->extract($value);
+
+        if (!$value) {
+            return false;
+        }
 
         switch (true) {
             case $this->operator->isEquals():
@@ -68,15 +71,9 @@ class DateMatches implements Specification
      * custom extraction logic if the input is not the correct type.
      *
      * @param mixed $value
-     *
-     * @throws UnsupportedValue
      */
-    protected function extract($value) : DateTimeInterface
+    protected function extract($value) : ?DateTimeInterface
     {
-        if (!$value instanceof DateTimeInterface) {
-            throw new UnsupportedValue($this, $value, DateTimeInterface::class);
-        }
-
-        return $value;
+        return $value instanceof DateTimeInterface ? $value : null;
     }
 }

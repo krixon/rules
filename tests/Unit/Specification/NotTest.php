@@ -21,8 +21,8 @@ class NotTest extends TestCase
     public function dataProvider() : array
     {
         return [
-            [new Not($this->true()), false],
-            [new Not($this->false()), true],
+            [new Not(self::true()), false],
+            [new Not(self::false()), true],
         ];
     }
 }

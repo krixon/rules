@@ -11,23 +11,23 @@ trait TestsSpecificationsWithChildren
      */
     public function testIsSatisfiedBy(Specification $specification, bool $expected) : void
     {
-        static::assertSame($expected, $specification->isSatisfiedBy('foo'));
+        static::assertSame($expected, $specification->isSatisfiedBy($expected));
     }
 
 
-    private function true() : Specification
+    private static function true() : Specification
     {
-        return $this->bool(true);
+        return self::bool(true);
     }
 
 
-    private function false() : Specification
+    private static function false() : Specification
     {
-        return $this->bool(false);
+        return self::bool(false);
     }
 
 
-    private function bool(bool $value) : Specification
+    private static function bool(bool $value) : Specification
     {
         return new class ($value) implements Specification
         {
@@ -36,9 +36,9 @@ trait TestsSpecificationsWithChildren
 
             public function __construct(bool $value)
             {
-
                 $this->value = $value;
             }
+
 
             public function isSatisfiedBy($value) : bool
             {

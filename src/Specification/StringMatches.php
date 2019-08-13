@@ -32,12 +32,8 @@ class StringMatches implements Specification
      *
      * @throws UnsupportedValue
      */
-    protected function extract($value) : string
+    protected function extract($value) : ?string
     {
-        if (!is_string($value)) {
-            throw new UnsupportedValue($this, $value, 'string');
-        }
-
-        return $value;
+        return is_string($value) ? $value : null;
     }
 }

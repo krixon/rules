@@ -10,17 +10,17 @@ class CompositeTest extends TestCase
     use TestsSpecificationsWithChildren;
 
 
-    public function testConstructable()
+    public function testConstructable() : void
     {
-        $or  = Composite::or($this->true(), $this->true());
-        $and = Composite::and($this->true(), $this->true());
+        $or  = Composite::or(self::true(), self::true());
+        $and = Composite::and(self::true(), self::true());
 
         static::assertInstanceOf(Composite::class, $or);
         static::assertInstanceOf(Composite::class, $and);
     }
 
 
-    public function testReturnsFalseWhenNoChildren()
+    public function testReturnsFalseWhenNoChildren() : void
     {
         $specification = Composite::and();
 
@@ -31,30 +31,30 @@ class CompositeTest extends TestCase
     public function dataProvider() : array
     {
         return [
-            [Composite::or($this->true()), true],
-            [Composite::or($this->false()), false],
-            [Composite::or($this->true(), $this->false()), true],
-            [Composite::or($this->false(), $this->false()), false],
-            [Composite::or($this->false(), $this->false(), $this->true()), true],
-            [Composite::or($this->true(), $this->true(), $this->true()), true],
+            [Composite::or(self::true()), true],
+            [Composite::or(self::false()), false],
+            [Composite::or(self::true(), self::false()), true],
+            [Composite::or(self::false(), self::false()), false],
+            [Composite::or(self::false(), self::false(), self::true()), true],
+            [Composite::or(self::true(), self::true(), self::true()), true],
 
-            [Composite::and($this->true()), true],
-            [Composite::and($this->false()), false],
-            [Composite::and($this->true(), $this->false()), false],
-            [Composite::and($this->false(), $this->false()), false],
-            [Composite::and($this->true(), $this->true(), $this->false()), false],
-            [Composite::and($this->true(), $this->true(), $this->true()), true],
+            [Composite::and(self::true()), true],
+            [Composite::and(self::false()), false],
+            [Composite::and(self::true(), self::false()), false],
+            [Composite::and(self::false(), self::false()), false],
+            [Composite::and(self::true(), self::true(), self::false()), false],
+            [Composite::and(self::true(), self::true(), self::true()), true],
 
-            [Composite::xor($this->true()), true],
-            [Composite::xor($this->false()), false],
-            [Composite::xor($this->true(), $this->false()), true],
-            [Composite::xor($this->false(), $this->true()), true],
-            [Composite::xor($this->false(), $this->false()), false],
-            [Composite::xor($this->true(), $this->true()), false],
-            [Composite::xor($this->false(), $this->false(), $this->false()), false],
-            [Composite::xor($this->true(), $this->false(), $this->false()), true],
-            [Composite::xor($this->true(), $this->true(), $this->false()), false],
-            [Composite::xor($this->true(), $this->true(), $this->true()), false],
+            [Composite::xor(self::true()), true],
+            [Composite::xor(self::false()), false],
+            [Composite::xor(self::true(), self::false()), true],
+            [Composite::xor(self::false(), self::true()), true],
+            [Composite::xor(self::false(), self::false()), false],
+            [Composite::xor(self::true(), self::true()), false],
+            [Composite::xor(self::false(), self::false(), self::false()), false],
+            [Composite::xor(self::true(), self::false(), self::false()), true],
+            [Composite::xor(self::true(), self::true(), self::false()), false],
+            [Composite::xor(self::true(), self::true(), self::true()), false],
         ];
     }
 }

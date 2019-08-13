@@ -9,6 +9,8 @@ abstract class SpecificationTestCase extends TestCase
 {
     /**
      * @dataProvider dataProvider
+     *
+     * @param mixed $value
      */
     public function testIsSatisfiedBy(Specification $specification, $value, bool $expected) : void
     {

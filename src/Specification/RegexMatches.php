@@ -22,6 +22,10 @@ class RegexMatches implements Specification
     {
         $value = $this->extract($value);
 
+        if (null === $value) {
+            return false;
+        }
+
         return preg_match($this->pattern, preg_quote($value, $this->delimiter)) === 1;
     }
 
@@ -36,12 +40,8 @@ class RegexMatches implements Specification
      *
      * @throws UnsupportedValue
      */
-    protected function extract($value) : string
+    protected function extract($value) : ?string
     {
-        if (!is_string($value)) {
-            throw new UnsupportedValue($this, $value, 'string');
-        }
-
-        return $value;
+        return is_string($value) ? $value : null;
     }
 }

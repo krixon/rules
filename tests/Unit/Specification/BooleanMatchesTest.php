@@ -15,4 +15,28 @@ class BooleanMatchesTest extends SpecificationTestCase
             [new BooleanMatches(false), true, false],
         ];
     }
+
+
+    /**
+     * @dataProvider unsatisfiedOnNonBooleanValueProvider
+     *
+     * @param mixed $unsupported
+     */
+    public static function testUnsatisfiedWithNonBooleanValue($unsupported) : void
+    {
+        static::assertFalse((new BooleanMatches(true))->isSatisfiedBy($unsupported));
+    }
+
+
+    public function unsatisfiedOnNonBooleanValueProvider() : array
+    {
+        return [
+            [[]],
+            ['string'],
+            [null],
+            [42],
+            [42.5],
+            [new \stdClass()],
+        ];
+    }
 }

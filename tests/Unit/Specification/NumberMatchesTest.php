@@ -49,6 +49,30 @@ class NumberMatchesTest extends SpecificationTestCase
     }
 
 
+    /**
+     * @dataProvider unsatisfiedOnNonNumericValueProvider
+     *
+     * @param mixed $unsupported
+     */
+    public static function testUnsatisfiedOnNonNumericValue($unsupported) : void
+    {
+        static::assertFalse((new NumberMatches(42))->isSatisfiedBy($unsupported));
+    }
+
+
+    public static function unsatisfiedOnNonNumericValueProvider() : array
+    {
+        return [
+            [[]],
+            ['string'],
+            [true],
+            [false],
+            [null],
+            [new \stdClass()],
+        ];
+    }
+
+
     private static function eq(float $number, float $epsilon = PHP_FLOAT_EPSILON) : NumberMatches
     {
         return new NumberMatches($number, Operator::equals(), $epsilon);

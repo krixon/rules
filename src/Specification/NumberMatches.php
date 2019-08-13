@@ -33,6 +33,11 @@ class NumberMatches implements Specification
     public function isSatisfiedBy($value) : bool
     {
         $value = $this->extract($value);
+
+        if (null === $value) {
+            return false;
+        }
+
         $equal = abs($value - $this->number) < $this->epsilon;
 
         switch (true) {
@@ -64,16 +69,16 @@ class NumberMatches implements Specification
      *
      * @param mixed $value
      *
-     * @return int|float
+     * @return int|float|null
      * @throws UnsupportedValue
      */
     protected function extract($value)
     {
-        if (!is_int($value) && !is_float($value)) {
-            throw new UnsupportedValue($this, $value, 'int|float');
+        if (is_int($value) || is_float($value)) {
+            return $value;
         }
 
-        return $value;
+        return null;
     }
 
 

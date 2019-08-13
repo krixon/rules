@@ -2,7 +2,6 @@
 
 namespace Krixon\Rules\Specification;
 
-use Krixon\Rules\Specification\Exception\UnsupportedValue;
 use function is_bool;
 
 class BooleanMatches implements Specification
@@ -18,11 +17,20 @@ class BooleanMatches implements Specification
 
     public function isSatisfiedBy($value) : bool
     {
-        if (!is_bool($value)) {
-            // Don't support loose comparison.
-            throw new UnsupportedValue($this, $value, 'bool');
-        }
+        return $this->extract($value) === $this->boolean;
+    }
 
-        return $value === $this->boolean;
+
+    /**
+     * Extract the value to test from the input passed to isSatisfiedBy().
+     *
+     * By default, this returns the input itself assuming it is of the correct type. This can be overridden to perform
+     * custom extraction logic if the input is not the correct type.
+     *
+     * @param mixed $value
+     */
+    protected function extract($value) : ?bool
+    {
+        return is_bool($value) ? $value : null;
     }
 }
