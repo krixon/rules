@@ -3,6 +3,7 @@
 namespace Krixon\Rules\Tests\Unit\Ast;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use Krixon\Rules\Ast\BooleanNode;
 use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Ast\DateNode;
@@ -10,6 +11,7 @@ use Krixon\Rules\Ast\IdentifierNode;
 use Krixon\Rules\Ast\LiteralNodeList;
 use Krixon\Rules\Ast\NumberNode;
 use Krixon\Rules\Ast\StringNode;
+use Krixon\Rules\Ast\TimezoneNode;
 use PHPUnit\Framework\TestCase;
 
 class ComparisonNodeTest extends TestCase
@@ -74,6 +76,11 @@ class ComparisonNodeTest extends TestCase
      */
     private $date;
 
+    /**
+     * @var TimezoneNode
+     */
+    private $timezone;
+
 
     protected function setUp() : void
     {
@@ -84,6 +91,7 @@ class ComparisonNodeTest extends TestCase
         $this->boolean    = new BooleanNode(true);
         $this->number     = new NumberNode(42);
         $this->date       = new DateNode(new DateTimeImmutable('2000-01-01 00:00:00'));
+        $this->timezone   = new TimezoneNode(new DateTimeZone('Europe/London'));
         $this->equal      = ComparisonNode::equals($this->identifier, $this->string);
         $this->gt         = ComparisonNode::greaterThan($this->identifier, $this->string);
         $this->gte        = ComparisonNode::greaterThanOrEqualTo($this->identifier, $this->string);
@@ -184,6 +192,7 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->boolean)->isValueString());
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->number)->isValueString());
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->date)->isValueString());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->timezone)->isValueString());
     }
 
 
@@ -193,6 +202,7 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->string)->isValueBoolean());
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->number)->isValueBoolean());
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->date)->isValueBoolean());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->timezone)->isValueBoolean());
     }
 
 
@@ -202,6 +212,7 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->string)->isValueNumber());
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->boolean)->isValueNumber());
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->date)->isValueNumber());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->timezone)->isValueNumber());
     }
 
 
@@ -211,5 +222,16 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->number)->isValueDate());
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->string)->isValueDate());
         static::assertFalse(ComparisonNode::equals($this->identifier, $this->boolean)->isValueDate());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->timezone)->isValueDate());
+    }
+
+
+    public function testCanDetermineIfValueIsTimezone() : void
+    {
+        static::assertTrue(ComparisonNode::equals($this->identifier, $this->timezone)->isValueTimezone());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->date)->isValueTimezone());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->number)->isValueTimezone());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->string)->isValueTimezone());
+        static::assertFalse(ComparisonNode::equals($this->identifier, $this->boolean)->isValueTimezone());
     }
 }

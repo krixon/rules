@@ -142,6 +142,12 @@ class ComparisonNode implements Node
     }
 
 
+    public function isValueTimezone() : bool
+    {
+        return $this->value instanceof TimezoneNode;
+    }
+
+
     public function identifier() : IdentifierNode
     {
         return $this->identifier;
