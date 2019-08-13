@@ -70,14 +70,15 @@ final class CompilerError extends Exception
     public static function fromSpecificationError(SpecificationError $exception, ComparisonNode $node) : self
     {
         if ($exception instanceof UnsupportedOperator) {
-            return self::unsupportedComparisonOperatorFromNode($node);
+            return self::unsupportedComparisonOperatorFromNode($node, $exception);
         }
 
         if ($exception instanceof UnsupportedValue) {
             return self::unsupportedValueType(
                 $node->literalValue(),
                 $node->identifierFullName(),
-                $exception->expected()
+                $exception->expected(),
+                $exception
             );
         }
 
