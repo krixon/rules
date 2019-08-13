@@ -7,6 +7,9 @@ use Krixon\Rules\Compiler\SpecificationGenerator;
 use Krixon\Rules\Exception\CompilerError;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 
+/**
+ * @deprecated Use StringMatches specifications with the "matches" operator instead.
+ */
 class RegexMatchesGenerator implements SpecificationGenerator
 {
     public function attempt(ComparisonNode $comparison) : ?Specification

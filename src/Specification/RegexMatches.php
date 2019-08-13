@@ -5,6 +5,9 @@ namespace Krixon\Rules\Specification;
 use Krixon\Rules\Specification\Exception\UnsupportedValue;
 use function is_string;
 
+/**
+ * @deprecated Use StringMatches specifications with the "matches" operator instead.
+ */
 class RegexMatches implements Specification
 {
     private $pattern;
