@@ -4,10 +4,12 @@ namespace Krixon\Rules\Specification;
 
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\UnsupportedOperator;
+use Krixon\Rules\Specification\Exception\UnsupportedValue;
 use function abs;
+use function is_float;
 use const PHP_FLOAT_EPSILON;
 
-abstract class NumberMatches implements Specification
+class NumberMatches implements Specification
 {
     private $number;
     private $operator;
@@ -55,10 +57,24 @@ abstract class NumberMatches implements Specification
 
 
     /**
+     * Extract the value to test from the input passed to isSatisfiedBy().
+     *
+     * By default, this returns the input itself assuming it is of the correct type. This can be overridden to perform
+     * custom extraction logic if the input is not the correct type.
+     *
      * @param mixed $value
+     *
      * @return int|float
+     * @throws UnsupportedValue
      */
-    abstract protected function extract($value);
+    protected function extract($value)
+    {
+        if (!is_int($value) && !is_float($value)) {
+            throw new UnsupportedValue($this, $value, 'int|float');
+        }
+
+        return $value;
+    }
 
 
     protected function supportsOperator(Operator $operator) : bool

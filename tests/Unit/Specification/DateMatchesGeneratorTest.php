@@ -23,7 +23,7 @@ class DateMatchesGeneratorTest extends TestCase
         $comparison->method('literalValue')->willReturn(new DateTimeImmutable('2000-01-01 00:00:00'));
         $comparison->method('operator')->willReturn(Operator::greaterThan());
 
-        $specification = self::generator()->attempt($comparison);
+        $specification = (new DateMatchesGenerator())->attempt($comparison);
 
         static::assertInstanceOf(DateMatches::class, $specification);
         static::assertTrue($specification->isSatisfiedBy(new DateTimeImmutable('2020-01-01 00:00:00')));
@@ -36,7 +36,7 @@ class DateMatchesGeneratorTest extends TestCase
 
         $comparison->method('isValueDate')->willReturn(false);
 
-        static::assertNull(self::generator()->attempt($comparison));
+        static::assertNull((new DateMatchesGenerator())->attempt($comparison));
     }
 
 
@@ -51,31 +51,9 @@ class DateMatchesGeneratorTest extends TestCase
         $comparison->method('value')->willReturn(new DateNode($date));
         $comparison->method('operator')->willReturn(Operator::matches());
 
-        $generator  = $this->getMockForAbstractClass(DateMatchesGenerator::class);
-
-        $generator->method('generate')->willThrowException($this->createMock(UnsupportedOperator::class));
-
         $this->expectException(CompilerError::class);
         $this->expectExceptionCode(CompilerError::UNSUPPORTED_COMPARISON_OPERATOR);
 
-        $generator->attempt($comparison);
-    }
-
-
-    private static function generator() : DateMatchesGenerator
-    {
-        return new class() extends DateMatchesGenerator
-        {
-            protected function generate(DateTimeInterface $date, Operator $operator) : DateMatches
-            {
-                return new class($date, $operator) extends DateMatches
-                {
-                    protected function extract($value) : DateTimeInterface
-                    {
-                        return $value;
-                    }
-                };
-            }
-        };
+        (new DateMatchesGenerator())->attempt($comparison);
     }
 }

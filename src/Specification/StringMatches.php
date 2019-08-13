@@ -2,7 +2,10 @@
 
 namespace Krixon\Rules\Specification;
 
-abstract class StringMatches implements Specification
+use Krixon\Rules\Specification\Exception\UnsupportedValue;
+use function is_string;
+
+class StringMatches implements Specification
 {
     private $string;
 
@@ -19,5 +22,22 @@ abstract class StringMatches implements Specification
     }
 
 
-    abstract protected function extract($value) : string;
+    /**
+     * Extract the value to test from the input passed to isSatisfiedBy().
+     *
+     * By default, this returns the input itself assuming it is of the correct type. This can be overridden to perform
+     * custom extraction logic if the input is not the correct type.
+     *
+     * @param mixed $value
+     *
+     * @throws UnsupportedValue
+     */
+    protected function extract($value) : string
+    {
+        if (!is_string($value)) {
+            throw new UnsupportedValue($this, $value, 'string');
+        }
+
+        return $value;
+    }
 }

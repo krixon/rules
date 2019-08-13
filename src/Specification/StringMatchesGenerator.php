@@ -7,7 +7,7 @@ use Krixon\Rules\Compiler\SpecificationGenerator;
 use Krixon\Rules\Exception\CompilerError;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 
-abstract class StringMatchesGenerator implements SpecificationGenerator
+class StringMatchesGenerator implements SpecificationGenerator
 {
     public function attempt(ComparisonNode $comparison) : ?Specification
     {
@@ -28,7 +28,14 @@ abstract class StringMatchesGenerator implements SpecificationGenerator
 
 
     /**
+     * Generates the specification with the validated options.
+     *
+     * This can be overridden to generate a custom specification if desired.
+     *
      * @throws SpecificationError|CompilerError
      */
-    abstract protected function generate(string $string) : StringMatches;
+     protected function generate(string $string) : StringMatches
+     {
+         return new StringMatches($string);
+     }
 }

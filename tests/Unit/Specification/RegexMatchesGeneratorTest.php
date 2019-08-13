@@ -21,7 +21,7 @@ class RegexMatchesGeneratorTest extends TestCase
         $comparison->method('literalValue')->willReturn('/bar/');
         $comparison->method('isMatches')->willReturn(true);
 
-        $specification = self::generator()->attempt($comparison);
+        $specification = (new RegexMatchesGenerator)->attempt($comparison);
 
         static::assertInstanceOf(RegexMatches::class, $specification);
         static::assertTrue($specification->isSatisfiedBy('foobarbaz'));
@@ -34,7 +34,7 @@ class RegexMatchesGeneratorTest extends TestCase
 
         $comparison->method('isValueString')->willReturn(false);
 
-        static::assertNull(self::generator()->attempt($comparison));
+        static::assertNull((new RegexMatchesGenerator)->attempt($comparison));
     }
 
 
@@ -48,31 +48,9 @@ class RegexMatchesGeneratorTest extends TestCase
         $comparison->method('value')->willReturn(new StringNode('/foo/'));
         $comparison->method('operator')->willReturn(Operator::greaterThan());
 
-        $generator = $this->getMockForAbstractClass(RegexMatchesGenerator::class);
-
-        $generator->method('generate')->willThrowException($this->createMock(UnsupportedOperator::class));
-
         $this->expectException(CompilerError::class);
         $this->expectExceptionCode(CompilerError::UNSUPPORTED_COMPARISON_OPERATOR);
 
-        $generator->attempt($comparison);
-    }
-
-
-    private static function generator() : RegexMatchesGenerator
-    {
-        return new class() extends RegexMatchesGenerator
-        {
-            protected function generate(string $string) : RegexMatches
-            {
-                return new class($string) extends RegexMatches
-                {
-                    protected function extract($value) : string
-                    {
-                        return $value;
-                    }
-                };
-            }
-        };
+        (new RegexMatchesGenerator())->attempt($comparison);
     }
 }

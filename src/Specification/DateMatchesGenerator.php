@@ -9,7 +9,7 @@ use Krixon\Rules\Exception\CompilerError;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 
-abstract class DateMatchesGenerator implements SpecificationGenerator
+class DateMatchesGenerator implements SpecificationGenerator
 {
     public function attempt(ComparisonNode $comparison) : ?Specification
     {
@@ -26,7 +26,14 @@ abstract class DateMatchesGenerator implements SpecificationGenerator
 
 
     /**
+     * Generates the specification with the validated options.
+     *
+     * This can be overridden to generate a custom specification if desired.
+     *
      * @throws SpecificationError|CompilerError
      */
-    abstract protected function generate(DateTimeInterface $date, Operator $operator) : DateMatches;
+    protected function generate(DateTimeInterface $date, Operator $operator) : DateMatches
+    {
+        return new DateMatches($date, $operator);
+    }
 }

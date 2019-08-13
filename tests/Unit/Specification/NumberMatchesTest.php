@@ -51,45 +51,30 @@ class NumberMatchesTest extends SpecificationTestCase
 
     private static function eq(float $number, float $epsilon = PHP_FLOAT_EPSILON) : NumberMatches
     {
-        return self::specification($number, Operator::equals(), $epsilon);
+        return new NumberMatches($number, Operator::equals(), $epsilon);
     }
 
 
     private static function lt(float $number, float $epsilon = PHP_FLOAT_EPSILON) : NumberMatches
     {
-        return self::specification($number, Operator::lessThan(), $epsilon);
+        return new NumberMatches($number, Operator::lessThan(), $epsilon);
     }
 
 
     private static function lte(float $number, float $epsilon = PHP_FLOAT_EPSILON) : NumberMatches
     {
-        return self::specification($number, Operator::lessThanOrEquals(), $epsilon);
+        return new NumberMatches($number, Operator::lessThanOrEquals(), $epsilon);
     }
 
 
     private static function gt(float $number, float $epsilon = PHP_FLOAT_EPSILON) : NumberMatches
     {
-        return self::specification($number, Operator::greaterThan(), $epsilon);
+        return new NumberMatches($number, Operator::greaterThan(), $epsilon);
     }
 
 
     private static function gte(float $number, float $epsilon = PHP_FLOAT_EPSILON) : NumberMatches
     {
-        return self::specification($number, Operator::greaterThanOrEquals(), $epsilon);
-    }
-
-
-    private static function specification(
-        float $number,
-        Operator $operator,
-        float $epsilon = PHP_FLOAT_EPSILON
-    ) : NumberMatches {
-        return new class($number, $operator, $epsilon) extends NumberMatches
-        {
-            protected function extract($value)
-            {
-                return $value;
-            }
-        };
+        return new NumberMatches($number, Operator::greaterThanOrEquals(), $epsilon);
     }
 }
