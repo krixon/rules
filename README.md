@@ -12,7 +12,7 @@ A simple language for defining and building [Specification Pattern](https://en.w
 
 # Prerequisites
 
-- PHP 7.1+
+- PHP 7.2+
 
 # Installation
 ## Install via composer
