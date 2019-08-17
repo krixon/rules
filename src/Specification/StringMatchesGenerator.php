@@ -5,22 +5,15 @@ namespace Krixon\Rules\Specification;
 use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Compiler\SpecificationGenerator;
 use Krixon\Rules\Exception\CompilerError;
+use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 
 class StringMatchesGenerator implements SpecificationGenerator
 {
     public function attempt(ComparisonNode $comparison) : ?Specification
     {
-        if (!$comparison->isValueString()) {
-            return null;
-        }
-
-        if (!$comparison->isEquals()) {
-            throw CompilerError::unsupportedComparisonOperatorFromNode($comparison);
-        }
-
         try {
-            return $this->generate($comparison->literalValue());
+            return $this->generate($comparison->literalValue(), $comparison->operator());
         } catch (SpecificationError $exception) {
             throw CompilerError::fromSpecificationError($exception, $comparison);
         }
@@ -32,10 +25,12 @@ class StringMatchesGenerator implements SpecificationGenerator
      *
      * This can be overridden to generate a custom specification if desired.
      *
+     * @param mixed
+     *
      * @throws SpecificationError|CompilerError
      */
-     protected function generate(string $string) : StringMatches
+     protected function generate($string, ?Operator $operator) : StringMatches
      {
-         return new StringMatches($string);
+         return new StringMatches($string, $operator);
      }
 }

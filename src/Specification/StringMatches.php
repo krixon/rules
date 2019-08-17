@@ -5,6 +5,8 @@ namespace Krixon\Rules\Specification;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\UnsupportedOperator;
 use Krixon\Rules\Specification\Exception\UnsupportedValue;
+use function in_array;
+use function is_array;
 use function is_string;
 use function preg_match;
 use function preg_quote;
@@ -15,12 +17,19 @@ class StringMatches implements Specification
     private $operator;
 
 
-    public function __construct(string $string, ?Operator $operator = null)
+    /**
+     * @param string|string[]
+     */
+    public function __construct($string, ?Operator $operator = null)
     {
         $operator = $operator ?? Operator::equals();
 
-        if (!$this->supportsOperator($operator)) {
+        if (!$this->supportsOperator($operator, $string)) {
             throw new UnsupportedOperator($this, $operator);
+        }
+
+        if (!$this->supportsValue($string, $expected)) {
+            throw new UnsupportedValue($this, $string, $expected);
         }
 
         $this->string   = $string;
@@ -36,19 +45,23 @@ class StringMatches implements Specification
             return false;
         }
 
+        if (is_array($this->string)) {
+            return $this->contains($value);
+        }
+
         switch (true) {
             case $this->operator->isEquals():
                 return $this->string === $value;
             case $this->operator->isMatches():
                 return preg_match($this->string, preg_quote($value, $this->string[0])) === 1;
             case $this->operator->isLessThan():
-                return $this->string < $value;
+                return $value < $this->string;
             case $this->operator->isLessThanOrEqualTo():
-                return $this->string <= $value;
+                return $value <= $this->string;
             case $this->operator->isGreaterThan():
-                return $this->string > $value;
+                return $value > $this->string;
             case $this->operator->isGreaterThanOrEqualTo():
-                return $this->string >= $value;
+                return $value >= $this->string;
         }
 
         // @codeCoverageIgnoreStart
@@ -75,13 +88,44 @@ class StringMatches implements Specification
     }
 
 
-    protected function supportsOperator(Operator $operator) : bool
+    protected function supportsOperator(Operator $operator, $value) : bool
     {
+        // This check is overly simplistic on the basis that the value will be checked next via supportsValue().
+        // For the purposes of the operator check, we assume we either have an array of strings or a single string.
+
+        if (is_array($value)) {
+            return $operator->isIn();
+        }
+
         return $operator->isEquals()
             || $operator->isMatches()
             || $operator->isLessThan()
             || $operator->isLessThanOrEqualTo()
             || $operator->isGreaterThan()
             || $operator->isGreaterThanOrEqualTo();
+    }
+
+
+    protected function supportsValue($value, &$expected) : bool
+    {
+        $expected = 'string | string[] | regex pattern';
+
+        if (!is_array($value)) {
+            $value = [$value];
+        }
+
+        foreach ($value as $item) {
+            if (!is_string($item)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    private function contains(string $value) : bool
+    {
+        return in_array($value, $this->string, true);
     }
 }
