@@ -7,3 +7,6 @@ services:
     volumes:
       - ./:/src
       - ${COMPOSER_HOME:-~/.composer}:/.composer
+    environment:
+      XDEBUG_CONFIG: ${XDEBUG_CONFIG:-}
+      PHP_IDE_CONFIG: ${PHP_IDE_CONFIG:-serverName=rules}
