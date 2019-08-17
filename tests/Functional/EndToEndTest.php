@@ -2,8 +2,8 @@
 
 namespace Krixon\Rules\Tests\Functional;
 
+use DateTimeImmutable;
 use DateTimeZone;
-use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Compiler\Compiler;
 use Krixon\Rules\Compiler\DelegatingCompiler;
 use Krixon\Rules\Exception\CompilerError;
@@ -13,7 +13,6 @@ use Krixon\Rules\Parser\Parser;
 use Krixon\Rules\Specification\BooleanMatchesGenerator;
 use Krixon\Rules\Specification\DateMatchesGenerator;
 use Krixon\Rules\Specification\NumberMatchesGenerator;
-use Krixon\Rules\Specification\Specification;
 use Krixon\Rules\Specification\StringMatchesGenerator;
 use Krixon\Rules\Specification\TimezoneMatchesGenerator;
 use PHPUnit\Framework\TestCase;
@@ -36,26 +35,11 @@ class EndToEndTest extends TestCase
         parent::setUp();
 
         $this->compiler = new DelegatingCompiler(
-            new StringMatchesGenerator(),
-            new NumberMatchesGenerator(),
-            new BooleanMatchesGenerator(),
-            new DateMatchesGenerator()
-        );
-
-        // Ensure TimezoneMatches is used for timezone regex expressions.
-        $this->compiler->register(
-            new class() extends TimezoneMatchesGenerator
-            {
-                public function attempt(ComparisonNode $comparison) : ?Specification
-                {
-                    if ($comparison->identifierFullName() !== 'timezone') {
-                        return null;
-                    }
-
-                    return parent::attempt($comparison);
-                }
-            },
-            100
+            new StringMatchesGenerator('name'),
+            new NumberMatchesGenerator('age'),
+            new BooleanMatchesGenerator('git'),
+            new DateMatchesGenerator('dob'),
+            new TimezoneMatchesGenerator('timezone')
         );
 
         $this->parser = new DefaultParser();
@@ -116,6 +100,47 @@ class EndToEndTest extends TestCase
             ['age >= 42', 42.1, true],
             ['age >= 42', 41, false],
             ['age >= 42', 41.9999999, false],
+            ['age < 42', 42, false],
+            ['age < 42', 42.0, false],
+            ['age < 42', 42.1, false],
+            ['age < 42', 41.99999999, true],
+            ['age <= 42', 42, true],
+            ['age <= 42', 42.0, true],
+            ['age <= 42', 42.1, false],
+            ['age <= 42', 41.99999999, true],
+
+            ['git is true', true, true],
+            ['git is true', false, false],
+            ['git is false', true, false],
+            ['git is false', false, true],
+            ['git == true', true, true],
+            ['git != true', false, true],
+
+            ['dob is date:"2076-01-02 03:04:05"', new DateTimeImmutable('2076-01-02 03:04:05'), true],
+            ['dob is date:"2076-01-02 03:04:05"', new DateTimeImmutable('2076-01-02 03:04:06'), false],
+            [
+                'dob is date:"2000-01-01 00:00:00" in "Asia/Tokyo"',
+                new DateTimeImmutable('2000-01-01 00:00:00', new DateTimeZone('Asia/Tokyo')),
+                true
+            ],
+            [
+                'dob is date:"2000-01-01 00:00:00" in "Asia/Tokyo"',
+                new DateTimeImmutable('2000-01-01 00:00:00', new DateTimeZone('UTC')),
+                false
+            ],
+            [
+                'dob is date:"2000-01-01 00:00:00" in "Asia/Tokyo"',
+                new DateTimeImmutable('1999-12-31 15:00:00', new DateTimeZone('Europe/London')),
+                true
+            ],
+            ['dob > date:"2000-01-01 00:00:00"', new DateTimeImmutable('2000-01-01 00:00:00'), false],
+            ['dob > date:"2000-01-01 00:00:00"', new DateTimeImmutable('2000-01-01 00:00:01'), true],
+            ['dob > date:"2000-01-01 00:00:00"', new DateTimeImmutable('1999-12-31 23:59:59'), false],
+            [
+                'dob > date:"2000-01-01 00:00:00" in "Asia/Tokyo"',
+                new DateTimeImmutable('2000-01-01 00:00:00', new DateTimeZone('Europe/London')),
+                true
+            ],
 
             ['timezone is timezone:"Europe/London"', new DateTimeZone('Europe/London'), true],
             ['timezone is timezone:"Europe/London"', new DateTimeZone('UTC'), false],

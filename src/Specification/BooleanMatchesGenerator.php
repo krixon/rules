@@ -5,13 +5,12 @@ declare(strict_types=1);
 namespace Krixon\Rules\Specification;
 
 use Krixon\Rules\Ast\ComparisonNode;
-use Krixon\Rules\Compiler\SpecificationGenerator;
 use Krixon\Rules\Exception\CompilerError;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 
-class BooleanMatchesGenerator implements SpecificationGenerator
+class BooleanMatchesGenerator extends RestrictableGenerator
 {
-    public function attempt(ComparisonNode $comparison) : ?Specification
+    protected function continueAttempt(ComparisonNode $comparison) : ?Specification
     {
         if (!$comparison->isValueBoolean()) {
             return null;

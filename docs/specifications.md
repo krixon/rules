@@ -30,20 +30,34 @@ the expression `foo matches "/^europe/"` could be handled by `StringMatches` or 
 support the `matches` operator. In this situation, if the built-in generators are used, the first one provided to
 the `DelegatingCompiler` (or the one with highest priority if `DelegatingCompiler::register()` is used) will win.
 
-One way of avoiding this issue is to extend the generator so that the identifier can be examined. Identifiers do
-not mean anything to built-in specifications, but it is likely that you can determine the correct specification
-with some custom logic:
+Sometimes this can be avoided by specifying which identifiers are supported by a given generator. If an identifier
+is not supported, that generator will skip generation, allowing another to attempt it. All of the built-in generators
+support this:
 
 ```php
-class UserTimezoneMatchesGenerator extends TimezoneMatchesGenerator
+$compiler = new DelegatingCompiler(
+    new StringMatchesGenerator('name', 'email'),
+    new TimezoneMatchesGenerator('timezone'),
+    // ...
+);
+```
+
+Another way of avoiding this issue is to extend the generator so that the identifier can be examined using
+whatever custom logic is required:
+
+```php
+class UserMatchesGenerator extends StringMatchesGenerator
 {
     public function attempt(ComparisonNode $comparison) : ?Specification
     {
-        if ($comparison->identiferFullName() !== 'user.timezone') {
-            return null;
+        $identifier = $comparison->identifier();
+
+        // Support all `user.*` identifiers.
+        if ($identifer()->name() === 'user' && $identifier->hasSubIdentifier()) {
+            return parent::attempt($comparison);
         }
 
-        return parent::attempt($comparison);
+        return null;
     }
 }
 ```
