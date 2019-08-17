@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Krixon\Rules\Specification;
 
 use Krixon\Rules\Ast\ComparisonNode;
@@ -34,8 +36,8 @@ class BooleanMatchesGenerator implements SpecificationGenerator
      *
      * @throws SpecificationError|CompilerError
      */
-     protected function generate(string $string) : BooleanMatches
+     protected function generate(bool $value) : BooleanMatches
      {
-         return new BooleanMatches($string);
+         return new BooleanMatches($value);
      }
 }
