@@ -144,6 +144,9 @@ $compiler->register($generator, 100); // Priority of 100.
 
 `SpecificationGenerator`s with higher priority are invoked first.
 
+The library provides some [built-in specifications and corresponding generators](./docs/specifications.md)
+which can be used if desired. These are also easy to extend with custom logic.
+
 ## Negating comparisons
 
 `ComparisonNode` does not expose negated comparisons like `does not equal` and `does not match`. However this is

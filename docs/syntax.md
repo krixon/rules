@@ -14,9 +14,19 @@ comparisons with logical operators such as `and` and `or`. An example of a more 
 
 Determines if an identifier is equal to a value. The synonym `==` can also be used.
 
+```
+name is "Arnold Rimmer"
+name == "Arnold Rimmer"
+```
+
 ### `not`
 
 Determines if an identifier is not equal to a value. The synonym `!=` can also be used.
+
+```
+name not "Arnold Rimmer"
+name != "Arnold Rimmer"
+```
 
 ### `in`
 
