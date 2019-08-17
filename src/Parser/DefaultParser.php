@@ -6,6 +6,7 @@ use Krixon\Rules\Ast;
 use Krixon\Rules\Exception\SyntaxError;
 use Krixon\Rules\Lexer\Lexer;
 use Krixon\Rules\Lexer\Token;
+use function in_array;
 
 class DefaultParser implements Parser
 {
@@ -135,7 +136,7 @@ class DefaultParser implements Parser
             // Consume the NOT.
             $this->next();
 
-            if ($next && $next->isLiteral()) {
+            if ($next && $this->isLiteralOrTypeHint($next)) {
                 // NOT was found immediately before a literal rather than a comparison operator (e.g. foo not "bar").
                 // This is considered shorthand for NOT EQUALS.
                 return new Ast\NegationNode(Ast\ComparisonNode::equals($left, $this->parseLiteral()));
@@ -558,5 +559,19 @@ class DefaultParser implements Parser
         if (!in_array($hint, $hints, true)) {
             throw SyntaxError::unexpectedToken($this->expression, $hints, $token);
         }
+    }
+
+
+    private function isLiteralOrTypeHint(Token $token) : bool
+    {
+        if ($token->isLiteral()) {
+            return true;
+        }
+
+        if (!$token->is(Token::IDENTIFIER)) {
+            return false;
+        }
+
+        return in_array($token->value(), self::HINTS, true);
     }
 }
