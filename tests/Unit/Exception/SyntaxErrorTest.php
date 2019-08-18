@@ -43,6 +43,12 @@ class SyntaxErrorTest extends TestCase
                 "\t11 | k\n" .
                 "\t     ^-- here"
             ],
+            [
+                new SyntaxError('Something bad happened.', "a\nb\nc\nd\ne\nf\ng\nh\ni\nj\nk", 20),
+                "[line 11, column 1]: Something bad happened.\n\n" .
+                "\t11 | k\n" .
+                "\t     ^-- here"
+            ],
         ];
     }
 

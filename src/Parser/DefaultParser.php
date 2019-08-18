@@ -6,7 +6,9 @@ use Krixon\Rules\Ast;
 use Krixon\Rules\Exception\SyntaxError;
 use Krixon\Rules\Lexer\Lexer;
 use Krixon\Rules\Lexer\Token;
+use function get_class;
 use function in_array;
+use function sprintf;
 
 class DefaultParser implements Parser
 {
@@ -437,12 +439,31 @@ class DefaultParser implements Parser
         $this->next();
 
         $literals = [];
+        $type     = null;
 
         while (true) {
+            // In case of mismatched types error, this is the first token with a previously unseen type.
+            // Get hold of it before continuing to parse so its position can be used for the error.
+            $token = $this->token();
+
             // Technically it might be better to allow expressions rather than just literals.
             // This would require that a literal on its own is a valid expression though, which doesn't make
             // a lot of sense in the context of a rule.
-            $literals[] = $this->parseLiteral();
+            $literals[] = $literal = $this->parseLiteral();
+
+            if ($type === null) {
+                $type = $literal::type();
+            } elseif ($literal::type() !== $type) {
+                throw new SyntaxError(
+                    sprintf(
+                        "Lists must not contain different data types. This list contains '%s' and '%s' data.",
+                        $type,
+                        $literal::type()
+                    ),
+                    $this->expression,
+                    $token->position()
+                );
+            }
 
             if (!$this->is(Token::COMMA)) {
                 break;

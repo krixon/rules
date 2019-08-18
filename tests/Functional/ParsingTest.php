@@ -288,6 +288,12 @@ class ParsingTest extends TestCase
                 1,
                 8
             ],
+            'Mismatched list member types' => [
+                'foo in ["string", 42]',
+                "This list contains 'string' and 'number'",
+                1,
+                19
+            ],
         ];
     }
 }
