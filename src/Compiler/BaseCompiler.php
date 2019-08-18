@@ -72,8 +72,6 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
      */
     public function visitComparison(Ast\ComparisonNode $node) : void
     {
-        $this->assertSupportedComparison($node);
-
         $this->specifications->push($this->generate($node));
     }
 
@@ -116,22 +114,5 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
         // It is impossible to reach this point in a bug-free implementation.
         throw CompilerError::unsupportedLogicalOperation();
         // @codeCoverageIgnoreEnd
-    }
-
-
-    /**
-     * @throws CompilerError
-     */
-    private function assertSupportedComparison(Ast\ComparisonNode $comparison) : void
-    {
-        // Most comparison types are assumed to be valid. It is up to the specification generator to decide if
-        // a comparison is illogical in a particular context. However some comparison types never make sense. For
-        // example, it is meaningless to use GREATER_THAN with a BOOLEAN literal, so we check for those here.
-
-        if (!$comparison->isValueBoolean() || $comparison->isEquals()) {
-            return;
-        }
-
-        throw CompilerError::unsupportedComparisonOperatorFromNode($comparison);
     }
 }
