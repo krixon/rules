@@ -34,12 +34,7 @@ class DelegatingCompiler extends BaseCompiler
     {
         // The SplPriorityQueue is cloned because iteration removes elements (it's actually a max heap).
         foreach (clone $this->generators as $generator) {
-            try {
-                $result = $generator->attempt($comparison);
-            } catch (CompilerError $exception) {
-                // Squash and try the next generator.
-                continue;
-            }
+            $result = $generator->attempt($comparison);
 
             if ($result instanceof Specification) {
                 return $result;

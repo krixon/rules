@@ -23,7 +23,17 @@ final class Operator
 
     public function __toString() : string
     {
-        return $this->operator;
+        switch ($this->operator) {
+            case self::EQUALS:         return 'is';
+            case self::LESS:           return '<';
+            case self::LESS_EQUALS:    return '<=';
+            case self::GREATER:        return '>';
+            case self::GREATER_EQUALS: return '>=';
+            case self::IN:             return 'in';
+            case self::MATCHES:        return 'matches';
+        }
+
+        return 'UNKNOWN';
     }
 
 

@@ -4,6 +4,7 @@ namespace Krixon\Rules\Exception;
 
 use Exception;
 use Krixon\Rules\Ast\ComparisonNode;
+use Krixon\Rules\DescribesTypes;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 use Krixon\Rules\Specification\Exception\UnsupportedOperator;
@@ -14,6 +15,8 @@ use function vsprintf;
 
 final class CompilerError extends Exception
 {
+    use DescribesTypes;
+
     public const GENERIC                         = 0;
     public const UNKNOWN_IDENTIFIER              = 1;
     public const UNSUPPORTED_LOGICAL_OPERATION   = 2;
@@ -92,11 +95,11 @@ final class CompilerError extends Exception
         ?string $expected = null,
         Throwable $previous = null
     ) : self {
-        $message = "Unsupported value of type %s for identifier '%s'";
-        $args    = [gettype($value), $identifier];
+        $message = "Unsupported value of type '%s' for identifier '%s'";
+        $args    = [self::describeType($value), $identifier];
 
         if (null !== $expected) {
-            $message .= ". Expected: %s";
+            $message .= ". Expected '%s'";
             $args[]  = $expected;
         }
 

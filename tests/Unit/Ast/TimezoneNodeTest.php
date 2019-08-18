@@ -9,6 +9,6 @@ class TimezoneNodeTest extends TestCase
 {
     public static function testCanDetermineType() : void
     {
-        static::assertSame('TIMEZONE', TimezoneNode::type());
+        static::assertSame('timezone', TimezoneNode::type());
     }
 }

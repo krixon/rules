@@ -19,7 +19,7 @@ final class DateNode implements LiteralNode
 
     public static function type(): string
     {
-        return 'DATE';
+        return 'date';
     }
 
 

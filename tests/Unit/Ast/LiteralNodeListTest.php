@@ -9,6 +9,6 @@ class LiteralNodeListTest extends TestCase
 {
     public static function testCanDetermineType() : void
     {
-        static::assertSame('LIST', LiteralNodeList::type());
+        static::assertSame('list', LiteralNodeList::type());
     }
 }

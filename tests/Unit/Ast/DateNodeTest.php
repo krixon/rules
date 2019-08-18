@@ -9,6 +9,6 @@ class DateNodeTest extends TestCase
 {
     public static function testCanDetermineType() : void
     {
-        static::assertSame('DATE', DateNode::type());
+        static::assertSame('date', DateNode::type());
     }
 }

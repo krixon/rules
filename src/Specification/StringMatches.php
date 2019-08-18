@@ -108,7 +108,7 @@ class StringMatches implements Specification
 
     protected function supportsValue($value, &$expected) : bool
     {
-        $expected = 'string | string[] | regex pattern';
+        $expected = 'string | string[] | regex';
 
         if (!is_array($value)) {
             $value = [$value];

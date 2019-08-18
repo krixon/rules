@@ -9,6 +9,6 @@ class NumberNodeTest extends TestCase
 {
     public static function testCanDetermineType() : void
     {
-        static::assertSame('NUMBER', NumberNode::type());
+        static::assertSame('number', NumberNode::type());
     }
 }

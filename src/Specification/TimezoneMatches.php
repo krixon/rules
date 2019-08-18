@@ -62,27 +62,30 @@ class TimezoneMatches implements Specification
     protected function supportsOperator(Operator $operator, $value) : bool
     {
         // This check is overly simplistic on the basis that the value will be checked next via supportsValue().
-        // For the purposes of the operator check, we assume we either have an array of timezones or a single timezone.
+        // For the purposes of the operator check, we assume we either have an array of timezones, a single timezone
+        // or a regex pattern.
 
         if (is_array($value)) {
             return $operator->isIn();
         }
 
-        return $operator->isEquals() || $operator->isMatches();
+        if (is_string($value)) {
+            return $operator->isMatches();
+        }
+
+        return $operator->isEquals();
     }
 
 
     protected function supportsValue($value, &$expected) : bool
     {
-        $expected = sprintf('%1$s | %1$s[] | regex pattern', DateTimeZone::class);
+        $expected = 'timezone | timezone[] | regex';
 
         if (is_string($value)) {
             return true;
         }
 
-        if (is_array($value)) {
-            $expected .= '[]';
-        } else {
+        if (!is_array($value)) {
             $value = [$value];
         }
 

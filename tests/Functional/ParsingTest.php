@@ -104,6 +104,13 @@ class ParsingTest extends TestCase
                     new Ast\DateNode(new DateTimeImmutable('2000-01-01 12:30:45', new DateTimeZone('Asia/Tokyo')))
                 )
             ],
+            'Time defaults to midnight when not specified' => [
+                'foo is date:"2000-01-01"',
+                Ast\ComparisonNode::equals(
+                    new Ast\IdentifierNode('foo'),
+                    new Ast\DateNode(new DateTimeImmutable('2000-01-01 00:00:00'))
+                )
+            ],
             'Timezone type hint' => [
                 'foo is timezone:"Asia/Tokyo"',
                 Ast\ComparisonNode::equals(

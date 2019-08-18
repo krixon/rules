@@ -41,7 +41,7 @@ class CompilerErrorTest extends TestCase
         $exception  = CompilerError::unsupportedComparisonOperatorFromNode($comparison);
 
         static::assertSame(
-            "Unsupported comparison operator 'GREATER' for identifier 'foo' and operand type 'NUMBER'.",
+            "Unsupported comparison operator '>' for identifier 'foo' and operand type 'number'.",
             $exception->getMessage()
         );
     }

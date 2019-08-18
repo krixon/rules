@@ -9,6 +9,6 @@ class StringNodeTest extends TestCase
 {
     public static function testCanDetermineType() : void
     {
-        static::assertSame('STRING', StringNode::type());
+        static::assertSame('string', StringNode::type());
     }
 }

@@ -15,7 +15,7 @@ class LiteralNodeList implements LiteralNode
 
     public static function type() : string
     {
-        return 'LIST';
+        return 'list';
     }
 
 

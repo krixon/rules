@@ -20,6 +20,7 @@ use Krixon\Rules\Specification\DateMatches;
 use Krixon\Rules\Specification\DateMatchesGenerator;
 use Krixon\Rules\Specification\NumberMatches;
 use Krixon\Rules\Specification\NumberMatchesGenerator;
+use Krixon\Rules\Specification\Specification;
 use Krixon\Rules\Specification\StringMatches;
 use Krixon\Rules\Specification\StringMatchesGenerator;
 use Krixon\Rules\Specification\TimezoneMatches;
@@ -66,8 +67,7 @@ class EndToEndTest extends TestCase
      */
     public function testExpression(string $expression, $value, bool $expected) : void
     {
-        $ast           = $this->parser->parse($expression);
-        $specification = $this->compiler->compile($ast);
+        $specification = $this->compile($expression);
 
         static::assertSame($expected, $specification->isSatisfiedBy($value));
     }
@@ -132,13 +132,26 @@ class EndToEndTest extends TestCase
 
             ['dob is date:"2000-01-01 00:00:00"', $rimmer, true],
             ['dob is date:"2000-01-01 00:00:01"', $rimmer, false],
+            ['dob not date:"2000-01-01 00:00:00"', $rimmer, false],
+            ['dob not date:"2000-01-01 00:00:01"', $rimmer, true],
             ['dob is date:"2000-01-01 00:00:00" in "Europe/London"', $rimmer, true],
             ['dob is date:"2000-01-01 00:00:00" in "Asia/Tokyo"', $rimmer, false],
             ['dob is date:"2001-02-02 19:05:06" in "Europe/London"', $lister, true],
             ['dob is date:"2001-02-03 04:05:06" in "Asia/Tokyo"', $lister, true],
             ['dob > date:"2000-01-01 00:00:00"', $rimmer, false],
+            ['dob > date:"2000-01-01 00:00:01"', $rimmer, false],
             ['dob > date:"1999-12-31 23:59:59"', $rimmer, true],
+            ['dob > date:"2000-01-01 06:00:00" in "Asia/Tokyo"', $rimmer, true],
             ['dob >= date:"2000-01-01 00:00:00"', $rimmer, true],
+            ['dob >= date:"1999-12-31 23:59:59"', $rimmer, true],
+            ['dob >= date:"2000-01-01 00:00:01"', $rimmer, false],
+            ['dob < date:"2000-01-01 00:00:00"', $rimmer, false],
+            ['dob < date:"1999-12-31 23:59:59"', $rimmer, false],
+            ['dob < date:"2000-01-01 00:00:01"', $rimmer, true],
+            ['dob < date:"2000-01-01 10:00:00" in "Asia/Tokyo"', $rimmer, true],
+            ['dob <= date:"2000-01-01 00:00:00"', $rimmer, true],
+            ['dob <= date:"2000-01-01 00:00:01"', $rimmer, true],
+            ['dob <= date:"1999-12-31 23:59:59"', $rimmer, false],
 
             ['timezone is timezone:"Europe/London"', $rimmer, true],
             ['timezone is timezone:"Europe/London"', $kryten, false],
@@ -163,6 +176,43 @@ class EndToEndTest extends TestCase
             ['git is true or (name matches "/dave/i" and age < 40) or age > 100', $rimmer, true],
             ['git is true or (name matches "/dave/i" and age < 40) or age > 100', $lister, true],
             ['git is true or (name matches "/dave/i" and age < 40) or age > 100', $kryten, true],
+        ];
+    }
+
+
+    /**
+     * @dataProvider compilerErrorProvider
+     */
+    public function testCompilerError(string $expression, int $expectedCode, ?string $expectedMessage = null) : void
+    {
+        $this->expectException(CompilerError::class);
+        $this->expectExceptionCode($expectedCode);
+
+        if ($expectedMessage !== null) {
+            $this->expectExceptionMessageRegExp($expectedMessage);
+        }
+
+        $this->compile($expression);
+    }
+
+
+    public static function compilerErrorProvider() : array
+    {
+        $generic = CompilerError::GENERIC;
+        $cmp     = CompilerError::UNSUPPORTED_COMPARISON_OPERATOR;
+        $value   = CompilerError::UNSUPPORTED_VALUE_TYPE;
+
+        return [
+            ['git > true', $cmp, '/>.+boolean/'],
+            ['git > 42', $generic, '/no generator was able to produce a specification/i'],
+            ['git >= 42', $generic, '/no generator was able to produce a specification/i'],
+            ['git < 42', $generic, '/no generator was able to produce a specification/i'],
+            ['git <= 42', $generic, '/no generator was able to produce a specification/i'],
+            ['git matches "/foo/"', $generic, '/no generator was able to produce a specification/i'],
+            ['git in [true, false]', $generic, '/no generator was able to produce a specification/i'],
+
+            ['name is timezone:"Europe/London"', $value, '/timezone.+name.+string \| string\[\] \| regex/'],
+            ['name is date:"2012-01-01 00:00:00"', $value, '/date.+name.+string \| string\[\] \| regex/'],
         ];
     }
 
@@ -282,5 +332,13 @@ class EndToEndTest extends TestCase
         $user->timezone = $timezone;
 
         return $user;
+    }
+
+
+    private function compile(string $expression) : Specification
+    {
+        $ast = $this->parser->parse($expression);
+
+        return $this->compiler->compile($ast);
     }
 }

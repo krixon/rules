@@ -18,7 +18,7 @@ final class BooleanNode implements LiteralNode
 
     public static function type(): string
     {
-        return 'BOOLEAN';
+        return 'boolean';
     }
 
 

@@ -20,7 +20,7 @@ final class TimezoneNode implements LiteralNode
 
     public static function type(): string
     {
-        return 'TIMEZONE';
+        return 'timezone';
     }
 
 

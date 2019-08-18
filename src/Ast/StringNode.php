@@ -18,7 +18,7 @@ final class StringNode implements LiteralNode
 
     public static function type(): string
     {
-        return 'STRING';
+        return 'string';
     }
 
 
