@@ -21,7 +21,7 @@ class BooleanMatchesGenerator extends RestrictableGenerator
         }
 
         try {
-            return $this->generate($comparison->literalValue());
+            return $this->generate($comparison);
         } catch (SpecificationError $exception) {
             throw CompilerError::fromSpecificationError($exception, $comparison);
         }
@@ -35,8 +35,8 @@ class BooleanMatchesGenerator extends RestrictableGenerator
      *
      * @throws SpecificationError|CompilerError
      */
-     protected function generate(bool $value) : BooleanMatches
+     protected function generate(ComparisonNode $comparison) : BooleanMatches
      {
-         return new BooleanMatches($value);
+         return new BooleanMatches($comparison->literalValue());
      }
 }

@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Krixon\Rules\Specification;
 
-use DateTimeInterface;
 use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Exception\CompilerError;
-use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 
 class DateMatchesGenerator extends RestrictableGenerator
@@ -19,7 +17,7 @@ class DateMatchesGenerator extends RestrictableGenerator
         }
 
         try {
-            return $this->generate($comparison->literalValue(), $comparison->operator());
+            return $this->generate($comparison);
         } catch (SpecificationError $exception) {
             throw CompilerError::fromSpecificationError($exception, $comparison);
         }
@@ -33,8 +31,8 @@ class DateMatchesGenerator extends RestrictableGenerator
      *
      * @throws SpecificationError|CompilerError
      */
-    protected function generate(DateTimeInterface $date, Operator $operator) : DateMatches
+    protected function generate(ComparisonNode $comparison) : DateMatches
     {
-        return new DateMatches($date, $operator);
+        return new DateMatches($comparison->literalValue(), $comparison->operator());
     }
 }

@@ -6,7 +6,6 @@ namespace Krixon\Rules\Specification;
 
 use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Exception\CompilerError;
-use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 
 class StringMatchesGenerator  extends RestrictableGenerator
@@ -14,7 +13,7 @@ class StringMatchesGenerator  extends RestrictableGenerator
     public function continueAttempt(ComparisonNode $comparison) : ?Specification
     {
         try {
-            return $this->generate($comparison->literalValue(), $comparison->operator());
+            return $this->generate($comparison);
         } catch (SpecificationError $exception) {
             throw CompilerError::fromSpecificationError($exception, $comparison);
         }
@@ -26,11 +25,10 @@ class StringMatchesGenerator  extends RestrictableGenerator
      *
      * This can be overridden to generate a custom specification if desired.
      *
-     * @param mixed
      * @throws SpecificationError|CompilerError
      */
-    protected function generate($string, ?Operator $operator) : StringMatches
+    protected function generate(ComparisonNode $comparison) : StringMatches
     {
-        return new StringMatches($string, $operator);
+        return new StringMatches($comparison->literalValue(), $comparison->operator());
     }
 }

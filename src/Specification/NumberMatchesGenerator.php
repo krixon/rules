@@ -6,7 +6,6 @@ namespace Krixon\Rules\Specification;
 
 use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Exception\CompilerError;
-use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 
 class NumberMatchesGenerator extends RestrictableGenerator
@@ -18,7 +17,7 @@ class NumberMatchesGenerator extends RestrictableGenerator
         }
 
         try {
-            return $this->generate($comparison->literalValue(), $comparison->operator());
+            return $this->generate($comparison);
         } catch (SpecificationError $exception) {
             throw CompilerError::fromSpecificationError($exception, $comparison);
         }
@@ -32,8 +31,8 @@ class NumberMatchesGenerator extends RestrictableGenerator
      *
      * @throws SpecificationError|CompilerError
      */
-    protected function generate(float $number, Operator $operator) : NumberMatches
+    protected function generate(ComparisonNode $comparison) : NumberMatches
     {
-        return new NumberMatches($number, $operator);
+        return new NumberMatches($comparison->literalValue(), $comparison->operator());
     }
 }

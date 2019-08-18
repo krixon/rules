@@ -6,7 +6,6 @@ namespace Krixon\Rules\Specification;
 
 use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Exception\CompilerError;
-use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\SpecificationError;
 
 class TimezoneMatchesGenerator extends RestrictableGenerator
@@ -14,7 +13,7 @@ class TimezoneMatchesGenerator extends RestrictableGenerator
     public function continueAttempt(ComparisonNode $comparison) : ?Specification
     {
         try {
-            return $this->generate($comparison->literalValue(), $comparison->operator());
+            return $this->generate($comparison);
         } catch (SpecificationError $exception) {
             throw CompilerError::fromSpecificationError($exception, $comparison);
         }
@@ -29,8 +28,8 @@ class TimezoneMatchesGenerator extends RestrictableGenerator
      * @param mixed
      * @throws SpecificationError|CompilerError
      */
-    protected function generate($timezone, Operator $operator) : TimezoneMatches
+    protected function generate(ComparisonNode $comparison) : TimezoneMatches
     {
-        return new TimezoneMatches($timezone, $operator);
+        return new TimezoneMatches($comparison->literalValue(), $comparison->operator());
     }
 }
