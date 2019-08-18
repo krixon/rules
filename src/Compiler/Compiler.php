@@ -13,5 +13,5 @@ interface Compiler
      *
      * @throws CompilerError
      */
-    public function compile(Node $node) : Specification;
+    public function compile(Node $node, ?Options $options = null) : Specification;
 }

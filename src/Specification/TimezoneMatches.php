@@ -31,14 +31,7 @@ class TimezoneMatches implements Specification
             throw new UnsupportedValue($this, $timezone, $expected);
         }
 
-        if (is_array($timezone)) {
-            $timezone = array_map(
-                static function (DateTimeZone $timezone) : string {
-                    return $timezone->getName();
-                },
-                $timezone
-            );
-        } elseif ($timezone instanceof DateTimeZone) {
+        if ($timezone instanceof DateTimeZone) {
             $timezone = $timezone->getName();
         }
 
@@ -61,14 +54,6 @@ class TimezoneMatches implements Specification
 
     protected function supportsOperator(Operator $operator, $value) : bool
     {
-        // This check is overly simplistic on the basis that the value will be checked next via supportsValue().
-        // For the purposes of the operator check, we assume we either have an array of timezones, a single timezone
-        // or a regex pattern.
-
-        if (is_array($value)) {
-            return $operator->isIn();
-        }
-
         if (is_string($value)) {
             return $operator->isMatches();
         }
@@ -79,23 +64,13 @@ class TimezoneMatches implements Specification
 
     protected function supportsValue($value, &$expected) : bool
     {
-        $expected = 'timezone | timezone[] | regex';
+        $expected = 'timezone | regex';
 
         if (is_string($value)) {
             return true;
         }
 
-        if (!is_array($value)) {
-            $value = [$value];
-        }
-
-        foreach ($value as $item) {
-            if (!$item instanceof DateTimeZone) {
-                return false;
-            }
-        }
-
-        return true;
+        return $value instanceof DateTimeZone;
     }
 
 

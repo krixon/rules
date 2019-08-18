@@ -4,6 +4,7 @@ namespace Krixon\Rules\Compiler;
 
 use Krixon\Rules\Ast;
 use Krixon\Rules\Exception\CompilerError;
+use Krixon\Rules\Operator;
 use Krixon\Rules\Specification as Spec;
 
 abstract class BaseCompiler implements Compiler, Ast\Visitor
@@ -15,14 +16,25 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
      */
     private $specifications;
 
+    /**
+     * @var Options
+     */
+    private $options;
 
-    public function compile(Ast\Node $node) : Spec\Specification
+
+    public function compile(Ast\Node $node, ?Options $options = null) : Spec\Specification
     {
         $this->specifications = new SpecificationStack();
+        $this->options        = $options ?? Options::default();
 
         $node->accept($this);
 
-        return $this->specifications->pop();
+        $result = $this->specifications->pop();
+
+        $this->specifications = null;
+        $this->options        = null;
+
+        return $result;
     }
 
 
@@ -72,7 +84,25 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
      */
     public function visitComparison(Ast\ComparisonNode $node) : void
     {
-        $this->specifications->push($this->generate($node));
+        // If the operator is "in", build a "logical or" specification. This avoids the need for specifications
+        // to explicitly handle list values. However sometimes it might be preferable for a single custom
+        // specification to handle the list (e.g. for performance), so this behaviour is optional.
+
+        if (!$this->options->isInToLogicalOrConversionEnabled() || !$node->isIn() || !$node->isValueList()) {
+            $this->specifications->push($this->generate($node));
+            return;
+        }
+
+        /** @var Ast\LiteralNodeList $list */
+        $list     = $node->value();
+        $children = [];
+
+        foreach ($list->nodes() as $value) {
+            $equals     = new Ast\ComparisonNode($node->identifier(), Operator::equals(), $value);
+            $children[] = $this->generate($equals);
+        }
+
+        $this->specifications->push(Spec\Composite::or(...$children));
     }
 
 

@@ -20,7 +20,7 @@ class ComparisonNode implements Node
     private $value;
 
 
-    private function __construct(IdentifierNode $identifier, Operator $operator, LiteralNode $value)
+    public function __construct(IdentifierNode $identifier, Operator $operator, LiteralNode $value)
     {
         $this->identifier = $identifier;
         $this->operator   = $operator;
@@ -115,6 +115,12 @@ class ComparisonNode implements Node
     public function isMatches() : bool
     {
         return $this->operator->isMatches();
+    }
+
+
+    public function isValueList() : bool
+    {
+        return $this->value instanceof LiteralNodeList;
     }
 
 

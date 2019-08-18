@@ -4,6 +4,7 @@ namespace Krixon\Rules\Tests\Functional;
 
 use Krixon\Rules\Ast\ComparisonNode;
 use Krixon\Rules\Operator;
+use Krixon\Rules\Specification\Any;
 use Krixon\Rules\Specification\Composite;
 use Krixon\Rules\Specification\Not;
 use Krixon\Rules\Specification\Specification;
@@ -76,11 +77,19 @@ class SuccessfulCompilationTest extends CompilerTestCase
             ],
             [
                 'foo in ["a", "b", "c"]',
-                $this->stub('foo', $in, ['a', 'b', 'c'])
+                Composite::or(
+                    $this->stub('foo', $eq, 'a'),
+                    $this->stub('foo', $eq, 'b'),
+                    $this->stub('foo', $eq, 'c')
+                )
             ],
             [
-                'foo in ["a", 2, 3.5]',
-                $this->stub('foo', $in, ['a', 2, 3.5])
+                'foo in [1, 2, 3.5]',
+                Composite::or(
+                    $this->stub('foo', $eq, 1),
+                    $this->stub('foo', $eq, 2),
+                    $this->stub('foo', $eq, 3.5)
+                )
             ],
             'Between, simple numbers' => [
                 'foo between 10 and 20',

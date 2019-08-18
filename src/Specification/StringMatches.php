@@ -5,8 +5,6 @@ namespace Krixon\Rules\Specification;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\UnsupportedOperator;
 use Krixon\Rules\Specification\Exception\UnsupportedValue;
-use function in_array;
-use function is_array;
 use function is_string;
 use function preg_match;
 use function preg_quote;
@@ -43,10 +41,6 @@ class StringMatches implements Specification
 
         if (null === $value) {
             return false;
-        }
-
-        if (is_array($this->string)) {
-            return $this->contains($value);
         }
 
         switch (true) {
@@ -90,13 +84,6 @@ class StringMatches implements Specification
 
     protected function supportsOperator(Operator $operator, $value) : bool
     {
-        // This check is overly simplistic on the basis that the value will be checked next via supportsValue().
-        // For the purposes of the operator check, we assume we either have an array of strings or a single string.
-
-        if (is_array($value)) {
-            return $operator->isIn();
-        }
-
         return $operator->isEquals()
             || $operator->isMatches()
             || $operator->isLessThan()
@@ -108,24 +95,8 @@ class StringMatches implements Specification
 
     protected function supportsValue($value, &$expected) : bool
     {
-        $expected = 'string | string[] | regex';
+        $expected = 'string | regex';
 
-        if (!is_array($value)) {
-            $value = [$value];
-        }
-
-        foreach ($value as $item) {
-            if (!is_string($item)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-
-    private function contains(string $value) : bool
-    {
-        return in_array($value, $this->string, true);
+        return is_string($value);
     }
 }

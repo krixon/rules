@@ -209,10 +209,9 @@ class EndToEndTest extends TestCase
             ['git < 42', $generic, '/no generator was able to produce a specification/i'],
             ['git <= 42', $generic, '/no generator was able to produce a specification/i'],
             ['git matches "/foo/"', $generic, '/no generator was able to produce a specification/i'],
-            ['git in [true, false]', $generic, '/no generator was able to produce a specification/i'],
 
-            ['name is timezone:"Europe/London"', $value, '/timezone.+name.+string \| string\[\] \| regex/'],
-            ['name is date:"2012-01-01 00:00:00"', $value, '/date.+name.+string \| string\[\] \| regex/'],
+            ['name is timezone:"Europe/London"', $value, '/timezone.+name.+string \| regex/'],
+            ['name is date:"2012-01-01 00:00:00"', $value, '/date.+name.+string \| regex/'],
         ];
     }
 

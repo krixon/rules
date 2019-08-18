@@ -15,7 +15,6 @@ class TimezoneMatchesTest extends SpecificationTestCase
     {
         $utc    = new DateTimeZone('UTC');
         $tokyo  = new DateTimeZone('Asia/Tokyo');
-        $london = new DateTimeZone('Europe/London');
 
         return [
             [new TimezoneMatches($utc), $utc, true],
@@ -26,10 +25,6 @@ class TimezoneMatchesTest extends SpecificationTestCase
 
             [new TimezoneMatches('/^Asia/', Operator::matches()), $tokyo, true],
             [new TimezoneMatches('/^Asia/', Operator::matches()), $utc, false],
-
-            [new TimezoneMatches([$utc, $tokyo], Operator::in()), $utc, true],
-            [new TimezoneMatches([$utc, $tokyo], Operator::in()), $tokyo, true],
-            [new TimezoneMatches([$utc, $tokyo], Operator::in()), $london, false],
         ];
     }
 
@@ -49,21 +44,11 @@ class TimezoneMatchesTest extends SpecificationTestCase
 
     public function unsupportedOperatorProvider() : array
     {
-        $utc    = new DateTimeZone('UTC');
-        $tokyo  = new DateTimeZone('Asia/Tokyo');
-        $london = new DateTimeZone('Europe/London');
+        $utc = new DateTimeZone('UTC');
 
         return [
-            // Not supported for non-list literals.
-            [Operator::in(), $utc],
+            [Operator::in(), [$utc]],
             [Operator::in(), '/regex/i'],
-            // Not supported for list literals.
-            [Operator::equals(), [$utc, $tokyo, $london]],
-            [Operator::matches(), [$utc, $tokyo, $london]],
-            [Operator::lessThan(), [$utc, $tokyo, $london]],
-            [Operator::lessThanOrEquals(), [$utc, $tokyo, $london]],
-            [Operator::greaterThan(), [$utc, $tokyo, $london]],
-            [Operator::greaterThanOrEquals(), [$utc, $tokyo, $london]],
         ];
     }
 
@@ -84,13 +69,7 @@ class TimezoneMatchesTest extends SpecificationTestCase
     public function unsupportedValueProvider() : array
     {
         return [
-            [[42], Operator::in()],
-            [[false], Operator::in()],
-            [[new stdClass()], Operator::in()],
-            [[[]], Operator::in()],
-            [[[new DateTimeZone('UTC')]], Operator::in()],
-            [[new DateTimeZone('UTC'), 42], Operator::in()],
-
+            [[42], Operator::equals()],
             [42, Operator::equals()],
             [42.5, Operator::equals()],
             [true, Operator::equals()],

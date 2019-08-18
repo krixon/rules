@@ -39,12 +39,6 @@ class StringMatchesTest extends SpecificationTestCase
 
             'foobar matches /^foo/' => [new StringMatches('/^foo/', Operator::matches()), 'foobar', true],
             'foobar matches /^bar/' => [new StringMatches('/^bar/', Operator::matches()), 'foobar', false],
-
-            'a in [a,b,c]' => [new StringMatches(['a', 'b', 'c'], Operator::in()), 'a', true],
-            'b in [a,b,c]' => [new StringMatches(['a', 'b', 'c'], Operator::in()), 'b', true],
-            'c in [a,b,c]' => [new StringMatches(['a', 'b', 'c'], Operator::in()), 'c', true],
-            'd in [a,b,c]' => [new StringMatches(['a', 'b', 'c'], Operator::in()), 'd', false],
-            'A in [a,b,c]' => [new StringMatches(['a', 'b', 'c'], Operator::in()), 'A', false],
         ];
     }
 
@@ -65,15 +59,8 @@ class StringMatchesTest extends SpecificationTestCase
     public function unsupportedOperatorProvider() : array
     {
         return [
-            // Not supported for non-list literals.
             [Operator::in(), 'foo'],
-            // Not supported for list literals.
-            [Operator::equals(), ['array', 'of', 'strings']],
-            [Operator::matches(), ['array', 'of', 'strings']],
-            [Operator::lessThan(), ['array', 'of', 'strings']],
-            [Operator::lessThanOrEquals(), ['array', 'of', 'strings']],
-            [Operator::greaterThan(), ['array', 'of', 'strings']],
-            [Operator::greaterThanOrEquals(), ['array', 'of', 'strings']],
+            [Operator::in(), ['foo']],
         ];
     }
 
@@ -94,13 +81,7 @@ class StringMatchesTest extends SpecificationTestCase
     public function unsupportedValueProvider() : array
     {
         return [
-            [[42], Operator::in()],
-            [[false], Operator::in()],
-            [[new stdClass()], Operator::in()],
-            [[[]], Operator::in()],
-            [[['not valid because in nested array']], Operator::in()],
-            [['valid', 'also valid', 'but this number is not ->', 42], Operator::in()],
-
+            [[42], Operator::equals()],
             [42, Operator::equals()],
             [42.5, Operator::equals()],
             [true, Operator::equals()],

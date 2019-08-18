@@ -132,13 +132,13 @@ class ParsingTest extends TestCase
                 )
             ],
             [
-                'foo in ["bar", 42, 66.6]',
+                'foo in ["bar", "baz", "qux"]',
                 Ast\ComparisonNode::in(
                     new Ast\IdentifierNode('foo'),
                     new Ast\LiteralNodeList(
                         new Ast\StringNode('bar'),
-                        new Ast\NumberNode(42),
-                        new Ast\NumberNode(66.6)
+                        new Ast\StringNode('baz'),
+                        new Ast\StringNode('qux')
                     )
                 )
             ],
