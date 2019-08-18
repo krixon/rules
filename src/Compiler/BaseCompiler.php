@@ -98,7 +98,7 @@ abstract class BaseCompiler implements Compiler, Ast\Visitor
         $children = [];
 
         foreach ($list->nodes() as $value) {
-            $equals     = new Ast\ComparisonNode($node->identifier(), Operator::equals(), $value);
+            $equals     = Ast\ComparisonNode::equals($node->identifier(), $value);
             $children[] = $this->generate($equals);
         }
 

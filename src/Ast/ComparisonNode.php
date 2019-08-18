@@ -20,7 +20,7 @@ class ComparisonNode implements Node
     private $value;
 
 
-    public function __construct(IdentifierNode $identifier, Operator $operator, LiteralNode $value)
+    private function __construct(IdentifierNode $identifier, Operator $operator, LiteralNode $value)
     {
         $this->identifier = $identifier;
         $this->operator   = $operator;
