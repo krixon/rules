@@ -57,7 +57,7 @@ Two forms of this comparison are supported; a simple inclusive range, and a flex
 #### Simple Form
 
 This form of `between` implies an inclusive range, and is syntactic sugar for 
-`[identifier] >= [value] and [identifier] <= [value].
+`[identifier] >= [value] and [identifier] <= [value]`.
 
 - `foo between 10 and 20`
 - `foo between "a" and "z"`
