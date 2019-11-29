@@ -6,8 +6,6 @@ use DateTimeZone;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Specification\Exception\UnsupportedOperator;
 use Krixon\Rules\Specification\Exception\UnsupportedValue;
-use function array_map;
-use function is_array;
 use function is_string;
 
 class TimezoneMatches implements Specification
@@ -17,7 +15,7 @@ class TimezoneMatches implements Specification
 
 
     /**
-     * @param DateTimeZone|DateTimeZone[]|string $timezone A timezone, array of timezones or regex pattern string.
+     * @param DateTimeZone|string $timezone A DateTimeZone instance or a regex pattern string.
      */
     public function __construct($timezone, ?Operator $operator = null)
     {
