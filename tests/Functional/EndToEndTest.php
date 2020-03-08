@@ -10,12 +10,13 @@ use Krixon\Rules\Compiler\Compiler;
 use Krixon\Rules\Compiler\DelegatingCompiler;
 use Krixon\Rules\Compiler\SpecificationGenerator;
 use Krixon\Rules\Exception\CompilerError;
-use Krixon\Rules\Exception\SyntaxError;
 use Krixon\Rules\Operator;
 use Krixon\Rules\Parser\DefaultParser;
 use Krixon\Rules\Parser\Parser;
 use Krixon\Rules\Specification\BooleanMatches;
 use Krixon\Rules\Specification\BooleanMatchesGenerator;
+use Krixon\Rules\Specification\Contains;
+use Krixon\Rules\Specification\ContainsGenerator;
 use Krixon\Rules\Specification\DateMatches;
 use Krixon\Rules\Specification\DateMatchesGenerator;
 use Krixon\Rules\Specification\NumberMatches;
@@ -26,7 +27,8 @@ use Krixon\Rules\Specification\StringMatchesGenerator;
 use Krixon\Rules\Specification\TimezoneMatches;
 use Krixon\Rules\Specification\TimezoneMatchesGenerator;
 use PHPUnit\Framework\TestCase;
-use stdClass;
+use function json_encode;
+use const DATE_ATOM;
 
 class EndToEndTest extends TestCase
 {
@@ -50,7 +52,8 @@ class EndToEndTest extends TestCase
             self::numberMatchesGenerator(),
             self::booleanMatchesGenerator(),
             self::dateMatchesGenerator(),
-            self::timezoneMatchesGenerator()
+            self::timezoneMatchesGenerator(),
+            self::containsGenerator()
         );
 
         $this->parser = new DefaultParser();
@@ -60,24 +63,29 @@ class EndToEndTest extends TestCase
     /**
      * @dataProvider expressionProvider
      *
-     * @param mixed $value
-     *
-     * @throws CompilerError
-     * @throws SyntaxError
+     * @param object $value
      */
     public function testExpression(string $expression, $value, bool $expected) : void
     {
         $specification = $this->compile($expression);
 
-        static::assertSame($expected, $specification->isSatisfiedBy($value));
+        $message = sprintf(
+            'Expression `%s` with value %s was %s but was expected to be %s.',
+            $expression,
+            $value,
+            $expected ? 'unsatisfied' : 'satisfied',
+            $expected ? 'satisfied' : 'unsatisfied'
+        );
+
+        static::assertSame($expected, $specification->isSatisfiedBy($value), $message);
     }
 
 
     public static function expressionProvider() : array
     {
-        $rimmer = self::user('Arnold Rimmer', 42, true, '2000-01-01 00:00:00', 'Europe/London');
-        $lister = self::user('Dave Lister', 36.5, true, '2001-02-03 04:05:06', 'Asia/Tokyo');
-        $kryten = self::user('Kryten', 224, false, '2145-12-31 10:20:30', 'UTC');
+        $rimmer = self::user('Arnold Rimmer', 42, true, '2000-01-01 00:00:00', 'Europe/London', ['git', 'smeg-head']);
+        $lister = self::user('Dave Lister', 36.5, true, '2001-02-03 04:05:06', 'Asia/Tokyo', ['bum']);
+        $kryten = self::user('Kryten', 224, false, '2145-12-31 10:20:30', 'UTC', []);
 
         return [
             ['name is "Arnold Rimmer"', $rimmer, true],
@@ -164,6 +172,18 @@ class EndToEndTest extends TestCase
             ['timezone in [timezone:"Europe/London", timezone:"Asia/Tokyo"]', $kryten, false],
             ['timezone in [timezone:"Europe/London", timezone:"Asia/Tokyo"]', $rimmer, true],
             ['timezone in [timezone:"Europe/London", timezone:"Asia/Tokyo"]', $lister, true],
+
+            ['tags contains "git"', $rimmer, true],
+            ['tags contains "bum"', $rimmer, false],
+            ['tags contains any "git"', $rimmer, true],
+            ['tags contains any of "git"', $rimmer, true],
+            ['tags contains all "git"', $rimmer, true],
+            ['tags contains all of "git"', $rimmer, true],
+            ['tags contains any of ["git", "bum"]', $rimmer, true],
+            ['tags contains all of ["git", "bum"]', $rimmer, false],
+            ['tags contains any of ["foo", "bar"]', $rimmer, false],
+            ['tags contains all of ["foo", "bar"]', $rimmer, false],
+            ['tags contains "bum"', $kryten, false],
 
             ['git is true and age is 42', $rimmer, true],
             ['git is true and age is 42', $lister, false],
@@ -319,18 +339,72 @@ class EndToEndTest extends TestCase
     }
 
 
-    private static function user(string $name, float $age, bool $git, string $dob, string $timezone) : stdClass
+    private static function containsGenerator() : SpecificationGenerator
     {
-        $user     = new stdClass();
+        return new class('tags') extends ContainsGenerator
+        {
+            protected function generate(ComparisonNode $comparison) : Contains
+            {
+                return new class($comparison->literalValue(), $comparison->operator()) extends Contains
+                {
+                    protected function extract($value) : array
+                    {
+                        return $value->tags;
+                    }
+                };
+            }
+        };
+    }
+
+
+    private static function user(
+        string $name,
+        float $age,
+        bool $git,
+        string $dob,
+        string $timezone,
+        array $tags
+    ) {
         $timezone = new DateTimeZone($timezone);
+        $dob      = new DateTimeImmutable($dob, $timezone);
 
-        $user->name     = $name;
-        $user->age      = $age;
-        $user->git      = $git;
-        $user->dob      = new DateTimeImmutable($dob, $timezone);
-        $user->timezone = $timezone;
+        return new class($name, $age, $git, $dob, $timezone, $tags)
+        {
+            public $name;
+            public $age;
+            public $git;
+            public $dob;
+            public $timezone;
+            public $tags;
 
-        return $user;
+            public function __construct(
+                string $name,
+                float $age,
+                bool $git,
+                DateTimeImmutable $dob,
+                DateTimeZone $timezone,
+                array $tags
+            ) {
+                $this->name     = $name;
+                $this->age      = $age;
+                $this->git      = $git;
+                $this->dob      = $dob;
+                $this->timezone = $timezone;
+                $this->tags     = $tags;
+            }
+
+            public function __toString() : string
+            {
+                return json_encode([
+                    'name'     => $this->name,
+                    'age'      => $this->age,
+                    'git'      => $this->git,
+                    'dob'      => $this->dob->format(DATE_ATOM),
+                    'timezone' => $this->timezone->getName(),
+                    'tags'     => $this->tags,
+                ]);
+            }
+        };
     }
 
 

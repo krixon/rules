@@ -11,6 +11,8 @@ final class Operator
     private const GREATER_EQUALS = 'GREATER_EQUALS';
     private const IN             = 'IN';
     private const MATCHES        = 'MATCHES';
+    private const CONTAINS_ANY   = 'CONTAINS_ANY';
+    private const CONTAINS_ALL   = 'CONTAINS_ALL';
 
     private $operator;
 
@@ -31,9 +33,14 @@ final class Operator
             case self::GREATER_EQUALS: return '>=';
             case self::IN:             return 'in';
             case self::MATCHES:        return 'matches';
+            case self::CONTAINS_ALL:   return 'contains all';
+            case self::CONTAINS_ANY:   return 'contains any';
         }
 
+        // @codeCoverageIgnoreStart
+        // It is not possible to reach this point in a bug-free implementation.
         return 'UNKNOWN';
+        // @codeCoverageIgnoreEnd
     }
 
 
@@ -79,6 +86,18 @@ final class Operator
     }
 
 
+    public static function containsAny() : self
+    {
+        return new self(self::CONTAINS_ANY);
+    }
+
+
+    public static function containsAll() : self
+    {
+        return new self(self::CONTAINS_ALL);
+    }
+
+
     public function isEquals() : bool
     {
         return $this->operator === self::EQUALS;
@@ -118,5 +137,23 @@ final class Operator
     public function isMatches() : bool
     {
         return $this->operator === self::MATCHES;
+    }
+
+
+    public function isContains() : bool
+    {
+        return $this->isContainsAny() || $this->isContainsAll();
+    }
+
+
+    public function isContainsAny() : bool
+    {
+        return $this->operator === self::CONTAINS_ANY;
+    }
+
+
+    public function isContainsAll() : bool
+    {
+        return $this->operator === self::CONTAINS_ALL;
     }
 }

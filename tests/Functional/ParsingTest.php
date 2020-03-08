@@ -223,7 +223,7 @@ class ParsingTest extends TestCase
     {
         $parser = new DefaultParser();
 
-        static::expectException(SyntaxError::class);
+        $this->expectException(SyntaxError::class);
 
         try {
             $parser->parse($expression);

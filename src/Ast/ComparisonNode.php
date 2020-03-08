@@ -70,6 +70,18 @@ class ComparisonNode implements Node
     }
 
 
+    public static function containsAny(IdentifierNode $left, LiteralNode $right) : self
+    {
+        return new static($left, Operator::containsAny(), $right);
+    }
+
+
+    public static function containsAll(IdentifierNode $left, LiteralNode $right) : self
+    {
+        return new static($left, Operator::containsAll(), $right);
+    }
+
+
     public function accept(Visitor $visitor) : void
     {
         $visitor->visitComparison($this);
@@ -115,6 +127,24 @@ class ComparisonNode implements Node
     public function isMatches() : bool
     {
         return $this->operator->isMatches();
+    }
+
+
+    public function isContains() : bool
+    {
+        return $this->operator->isContains();
+    }
+
+
+    public function isContainsAny() : bool
+    {
+        return $this->operator->isContainsAny();
+    }
+
+
+    public function isContainsAll() : bool
+    {
+        return $this->operator->isContainsAll();
     }
 
 

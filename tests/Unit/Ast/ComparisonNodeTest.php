@@ -52,6 +52,16 @@ class ComparisonNodeTest extends TestCase
     private $lte;
 
     /**
+     * @var ComparisonNode
+     */
+    private $containsAny;
+
+    /**
+     * @var ComparisonNode
+     */
+    private $containsAll;
+
+    /**
      * @var IdentifierNode
      */
     private $identifier;
@@ -60,6 +70,11 @@ class ComparisonNodeTest extends TestCase
      * @var StringNode
      */
     private $string;
+
+    /**
+     * @var LiteralNodeList
+     */
+    private $stringList;
 
     /**
      * @var BooleanNode
@@ -86,19 +101,22 @@ class ComparisonNodeTest extends TestCase
     {
         parent::setUp();
 
-        $this->identifier = new IdentifierNode('foo');
-        $this->string     = new StringNode('bar');
-        $this->boolean    = new BooleanNode(true);
-        $this->number     = new NumberNode(42);
-        $this->date       = new DateNode(new DateTimeImmutable('2000-01-01 00:00:00'));
-        $this->timezone   = new TimezoneNode(new DateTimeZone('Europe/London'));
-        $this->equal      = ComparisonNode::equals($this->identifier, $this->string);
-        $this->gt         = ComparisonNode::greaterThan($this->identifier, $this->string);
-        $this->gte        = ComparisonNode::greaterThanOrEqualTo($this->identifier, $this->string);
-        $this->lt         = ComparisonNode::lessThan($this->identifier, $this->string);
-        $this->lte        = ComparisonNode::lessThanOrEqualTo($this->identifier, $this->string);
-        $this->in         = ComparisonNode::in($this->identifier, new LiteralNodeList($this->string));
-        $this->matches    = ComparisonNode::matches($this->identifier, $this->string);
+        $this->identifier  = new IdentifierNode('foo');
+        $this->string      = new StringNode('bar');
+        $this->boolean     = new BooleanNode(true);
+        $this->number      = new NumberNode(42);
+        $this->date        = new DateNode(new DateTimeImmutable('2000-01-01 00:00:00'));
+        $this->timezone    = new TimezoneNode(new DateTimeZone('Europe/London'));
+        $this->stringList  = new LiteralNodeList($this->string, new StringNode('baz'));
+        $this->equal       = ComparisonNode::equals($this->identifier, $this->string);
+        $this->gt          = ComparisonNode::greaterThan($this->identifier, $this->string);
+        $this->gte         = ComparisonNode::greaterThanOrEqualTo($this->identifier, $this->string);
+        $this->lt          = ComparisonNode::lessThan($this->identifier, $this->string);
+        $this->lte         = ComparisonNode::lessThanOrEqualTo($this->identifier, $this->string);
+        $this->in          = ComparisonNode::in($this->identifier, new LiteralNodeList($this->string));
+        $this->matches     = ComparisonNode::matches($this->identifier, $this->string);
+        $this->containsAny = ComparisonNode::containsAny($this->identifier, $this->stringList);
+        $this->containsAll = ComparisonNode::containsAll($this->identifier, $this->stringList);
     }
 
 
@@ -111,6 +129,8 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse($this->gt->isIn());
         static::assertFalse($this->gte->isIn());
         static::assertFalse($this->matches->isIn());
+        static::assertFalse($this->containsAny->isIn());
+        static::assertFalse($this->containsAll->isIn());
     }
 
 
@@ -123,6 +143,8 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse($this->gt->isEquals());
         static::assertFalse($this->gte->isEquals());
         static::assertFalse($this->matches->isEquals());
+        static::assertFalse($this->containsAny->isEquals());
+        static::assertFalse($this->containsAll->isEquals());
     }
 
 
@@ -135,6 +157,8 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse($this->lte->isGreaterThan());
         static::assertFalse($this->gte->isGreaterThan());
         static::assertFalse($this->matches->isGreaterThan());
+        static::assertFalse($this->containsAny->isGreaterThan());
+        static::assertFalse($this->containsAll->isGreaterThan());
     }
 
 
@@ -147,6 +171,8 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse($this->lte->isGreaterThanOrEqualTo());
         static::assertFalse($this->gt->isGreaterThanOrEqualTo());
         static::assertFalse($this->matches->isGreaterThanOrEqualTo());
+        static::assertFalse($this->containsAny->isGreaterThanOrEqualTo());
+        static::assertFalse($this->containsAll->isGreaterThanOrEqualTo());
     }
 
 
@@ -159,6 +185,8 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse($this->gt->isLessThan());
         static::assertFalse($this->gte->isLessThan());
         static::assertFalse($this->matches->isLessThan());
+        static::assertFalse($this->containsAny->isLessThan());
+        static::assertFalse($this->containsAll->isLessThan());
     }
 
 
@@ -171,6 +199,8 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse($this->gt->isLessThanOrEqualTo());
         static::assertFalse($this->gte->isLessThanOrEqualTo());
         static::assertFalse($this->matches->isLessThanOrEqualTo());
+        static::assertFalse($this->containsAny->isLessThanOrEqualTo());
+        static::assertFalse($this->containsAll->isLessThanOrEqualTo());
     }
 
 
@@ -183,6 +213,50 @@ class ComparisonNodeTest extends TestCase
         static::assertFalse($this->lte->isMatches());
         static::assertFalse($this->gt->isMatches());
         static::assertFalse($this->gte->isMatches());
+        static::assertFalse($this->containsAny->isMatches());
+        static::assertFalse($this->containsAll->isMatches());
+    }
+
+
+    public function testCanDetermineIfComparisonTypeIsContains() : void
+    {
+        static::assertTrue($this->containsAny->isContains());
+        static::assertTrue($this->containsAll->isContains());
+        static::assertFalse($this->matches->isContains());
+        static::assertFalse($this->equal->isContains());
+        static::assertFalse($this->in->isContains());
+        static::assertFalse($this->lt->isContains());
+        static::assertFalse($this->lte->isContains());
+        static::assertFalse($this->gt->isContains());
+        static::assertFalse($this->gte->isContains());
+    }
+
+
+    public function testCanDetermineIfComparisonTypeIsContainsAny() : void
+    {
+        static::assertTrue($this->containsAny->isContainsAny());
+        static::assertFalse($this->containsAll->isContainsAny());
+        static::assertFalse($this->matches->isContainsAny());
+        static::assertFalse($this->equal->isContainsAny());
+        static::assertFalse($this->in->isContainsAny());
+        static::assertFalse($this->lt->isContainsAny());
+        static::assertFalse($this->lte->isContainsAny());
+        static::assertFalse($this->gt->isContainsAny());
+        static::assertFalse($this->gte->isContainsAny());
+    }
+
+
+    public function testCanDetermineIfComparisonTypeIsContainsAll() : void
+    {
+        static::assertTrue($this->containsAll->isContainsAll());
+        static::assertFalse($this->containsAny->isContainsAll());
+        static::assertFalse($this->matches->isContainsAll());
+        static::assertFalse($this->equal->isContainsAll());
+        static::assertFalse($this->in->isContainsAll());
+        static::assertFalse($this->lt->isContainsAll());
+        static::assertFalse($this->lte->isContainsAll());
+        static::assertFalse($this->gt->isContainsAll());
+        static::assertFalse($this->gte->isContainsAll());
     }
 
 

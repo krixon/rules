@@ -12,6 +12,8 @@ class DefaultParserTest extends TestCase
 {
     /**
      * @dataProvider unexpectedTokenProvider
+     * @param Token[] $tokens
+     * @throws SyntaxError
      */
     public function testThrowsOnUnexpectedToken(string $expression, array $tokens, string $expected, string $got)
     {
@@ -19,7 +21,6 @@ class DefaultParserTest extends TestCase
 
         $lexer->method('tokenize')->willReturn($tokens);
 
-        /** @noinspection PhpParamsInspection */
         $parser = new DefaultParser($lexer);
 
         static::expectException(SyntaxError::class);
@@ -45,7 +46,7 @@ class DefaultParserTest extends TestCase
                 [
                     new Token(Token::IDENTIFIER, 'foo', 0),
                 ],
-                'BETWEEN | EQUALS | GREATER | GREATER_EQUALS | IN | LESS | LESS_EQUALS | MATCHES',
+                'BETWEEN | CONTAINS | EQUALS | GREATER | GREATER_EQUALS | IN | LESS | LESS_EQUALS | MATCHES',
                 'EOF',
             ],
             'Missing literal' => [

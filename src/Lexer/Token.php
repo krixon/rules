@@ -28,6 +28,10 @@ class Token
     public const OR             = 'OR';
     public const XOR            = 'XOR';
     public const EOF            = 'EOF';
+    public const CONTAINS       = 'CONTAINS';
+    public const ANY            = 'ANY';
+    public const ALL            = 'ALL';
+    public const OF             = 'OF';
 
     public const COMPARISON_OPERATORS = [
         self::EQUALS,
@@ -38,6 +42,7 @@ class Token
         self::IN,
         self::MATCHES,
         self::BETWEEN,
+        self::CONTAINS,
     ];
 
     // Technically NOT is a logical operator, but this list only includes binary operators
@@ -60,6 +65,7 @@ class Token
         self::AND,
         self::OR,
         self::XOR,
+        self::CONTAINS,
     ];
 
     public const LITERALS = [

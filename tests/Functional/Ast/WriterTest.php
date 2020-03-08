@@ -67,7 +67,37 @@ class WriterTest extends TestCase
                 'foo is 42 and (bar is 666 or bar is 667)',
                 '(foo is 42 and (bar is 666 or bar is 667))',
             ],
-            ['(foo is 10 xor bar is 10)']
+            ['(foo is 10 xor bar is 10)'],
+            [
+                'foo contains "bar"',
+                'foo contains any of ["bar"]',
+            ],
+            [
+                'foo contains "bar"',
+                'foo contains any of ["bar"]',
+            ],
+            [
+                'foo contains ["bar"]',
+                'foo contains any of ["bar"]',
+            ],
+            [
+                'foo contains ["bar", "baz"]',
+                'foo contains any of ["bar", "baz"]',
+            ],
+            [
+                'foo contains any ["bar", "baz"]',
+                'foo contains any of ["bar", "baz"]',
+            ],
+            [
+                'foo contains any of ["bar", "baz"]',
+            ],
+            [
+                'foo contains all ["bar", "baz"]',
+                'foo contains all of ["bar", "baz"]',
+            ],
+            [
+                'foo contains all of ["bar", "baz"]',
+            ],
         ];
     }
 }

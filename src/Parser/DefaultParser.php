@@ -2,11 +2,13 @@
 
 namespace Krixon\Rules\Parser;
 
+use DateTimeImmutable;
+use DateTimeZone;
+use Exception;
 use Krixon\Rules\Ast;
 use Krixon\Rules\Exception\SyntaxError;
 use Krixon\Rules\Lexer\Lexer;
 use Krixon\Rules\Lexer\Token;
-use function get_class;
 use function in_array;
 use function sprintf;
 
@@ -172,6 +174,9 @@ class DefaultParser implements Parser
             case TOKEN::IN:
                 $node = Ast\ComparisonNode::in($left, $this->parseLiteralList());
                 break;
+            case TOKEN::CONTAINS:
+                $node = $this->parseContainsComparison($left);
+                break;
             case TOKEN::MATCHES:
                 $node = $this->parseMatchesComparison($left);
                 break;
@@ -192,6 +197,61 @@ class DefaultParser implements Parser
         }
 
         return $node;
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
+    private function parseContainsComparison(Ast\IdentifierNode $identifier) : Ast\ComparisonNode
+    {
+        // There are a two main forms of this comparison, ANY and ALL.
+        //
+        // ANY means that the specification is satisfied when any of of the values is present.
+        // `foo contains any [1,2]` -> CONTAINS_ANY
+        //
+        // ALL means that the specification is satisfied when all of of the values are present.
+        // `foo contains all [1,2]` -> CONTAINS_ALL
+        //
+        // Note that there is no EXACTLY modifier - for this the existing `is` comparison can be used.
+        //
+        // If no modifier is specified, the comparison is assumed to be ANY:
+        // `foo contains [1,2]` -> CONTAINS_ANY
+        //
+        // The `of` keyword can be added for readability. This is just syntactic sugar and is ignored if present.
+        // `foo contains any of [1,2]` -> CONTAINS_ANY
+        // `foo contains all of [1,2]` -> CONTAINS_ALL
+        //
+        // Finally, it is possible to check if a single value is contained. It doesn't matter if ANY or ALL is used
+        // here as they are equivalent for a single value.
+        // `foo contains 1` -> CONTAINS_ANY
+        // Note that for consistency, if the comparison specifies ALL with a single value, it is converted to an ANY.
+        // This avoids the need for the compiler to handle both cases. The single value is also converted into a
+        // single-item list, again to simplify things for the compiler.
+
+        $modifier = Token::ANY;
+
+        if ($this->is(Token::ANY, Token::ALL)) {
+            $modifier = $this->token()->type();
+            $this->next();
+        }
+
+        if ($this->is(Token::OF)) {
+            $this->next();
+        }
+
+        $value = $this->parseLiteralSingleOrList();
+
+        if (!$value instanceof Ast\LiteralNodeList) {
+            $modifier = Token::ANY;
+            $value    = new Ast\LiteralNodeList($value);
+        }
+
+        if ($modifier === Token::ANY) {
+            return Ast\ComparisonNode::containsAny($identifier, $value);
+        }
+
+        return Ast\ComparisonNode::containsAll($identifier, $value);
     }
 
 
@@ -308,6 +368,19 @@ class DefaultParser implements Parser
     /**
      * @throws SyntaxError
      */
+    private function parseLiteralSingleOrList() : Ast\LiteralNode
+    {
+        if ($this->is(Token::LEFT_BRACKET)) {
+            return $this->parseLiteralList();
+        }
+
+        return $this->parseLiteral();
+    }
+
+
+    /**
+     * @throws SyntaxError
+     */
     private function parseLiteral() : Ast\LiteralNode
     {
         // Literals can be prefixed with a specific type hint, e.g. date:"1st Jan 2019".
@@ -389,8 +462,8 @@ class DefaultParser implements Parser
         }
 
         try {
-            $date = new \DateTimeImmutable($token->value(), $timezone);
-        } catch (\Exception $e) {
+            $date = new DateTimeImmutable($token->value(), $timezone);
+        } catch (Exception $e) {
             throw new SyntaxError(
                 sprintf("Invalid date literal '%s'.", $token->value()),
                 $this->expression,
@@ -413,8 +486,8 @@ class DefaultParser implements Parser
         $token = $this->token();
 
         try {
-            $timezone = new \DateTimeZone($token->value());
-        } catch (\Exception $e) {
+            $timezone = new DateTimeZone($token->value());
+        } catch (Exception $e) {
             throw new SyntaxError(
                 sprintf("Invalid timezone literal '%s'.", $token->value()),
                 $this->expression,

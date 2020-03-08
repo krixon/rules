@@ -2,6 +2,8 @@
 
 namespace Krixon\Rules\Ast;
 
+use const DATE_ATOM;
+
 class Writer implements Visitor
 {
     private $buffer;
@@ -110,6 +112,10 @@ class Writer implements Visitor
             $this->buffer .= ' < ';
         } elseif ($node->isLessThanOrEqualTo()) {
             $this->buffer .= ' <= ';
+        } elseif ($node->isContainsAll()) {
+            $this->buffer .= ' contains all of ';
+        } elseif ($node->isContainsAny()) {
+            $this->buffer .= ' contains any of ';
         }
 
         $node->value()->accept($this);
@@ -135,7 +141,7 @@ class Writer implements Visitor
         $date     = $node->value();
         $timezone = $date->getTimezone()->getName();
 
-        $this->buffer .= 'date:"' . $date->format(\DATE_ATOM) . '"';
+        $this->buffer .= 'date:"' . $date->format(DATE_ATOM) . '"';
 
         if ($timezone !== date_default_timezone_get()) {
             $this->buffer .= ' in "' . $timezone . '"';

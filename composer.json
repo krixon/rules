@@ -30,6 +30,7 @@
         "ext-intl": "*"
     },
     "require-dev": {
+        "ext-json": "*",
         "phpunit/phpunit": "^8.2",
         "php-coveralls/php-coveralls": "^2.1"
     }

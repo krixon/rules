@@ -8,16 +8,20 @@ use Krixon\Rules\Exception\SyntaxError;
 class Lexer
 {
     private const KEYWORDS = [
-        'is'      => Token::EQUALS,
-        'not'     => Token::NOT,
-        'and'     => Token::AND,
-        'or'      => Token::OR,
-        'xor'     => Token::XOR,
-        'in'      => Token::IN,
-        'true'    => Token::BOOLEAN,
-        'false'   => Token::BOOLEAN,
-        'matches' => Token::MATCHES,
-        'between' => Token::BETWEEN,
+        'is'       => Token::EQUALS,
+        'not'      => Token::NOT,
+        'and'      => Token::AND,
+        'or'       => Token::OR,
+        'xor'      => Token::XOR,
+        'in'       => Token::IN,
+        'true'     => Token::BOOLEAN,
+        'false'    => Token::BOOLEAN,
+        'matches'  => Token::MATCHES,
+        'between'  => Token::BETWEEN,
+        'contains' => Token::CONTAINS,
+        'any'      => Token::ANY,
+        'all'      => Token::ALL,
+        'of'       => Token::OF,
     ];
 
     private const ESCAPE_SEQUENCES = [
